@@ -4,6 +4,9 @@ import cn.t.freedns.core.data.Record;
 import cn.t.freedns.core.data.RecordClass;
 import cn.t.freedns.core.data.RecordType;
 
+import java.util.Collections;
+import java.util.List;
+
 /**
  * IpV6DomainRequestHandler
  *
@@ -22,7 +25,7 @@ public class IpV6DomainRequestHandler implements RequestHandler {
     }
 
     @Override
-    public Record handler(Query query) {
-        return null;
+    public List<Record> handler(Query query) {
+        return Collections.emptyList();
     }
 }

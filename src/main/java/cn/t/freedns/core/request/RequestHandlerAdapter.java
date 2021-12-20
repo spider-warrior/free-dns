@@ -28,9 +28,9 @@ public class RequestHandlerAdapter {
         for (Query query : queryList) {
             RequestHandler requestHandler = selectMessageHandler(query);
             if(requestHandler != null) {
-                Record record = requestHandler.handler(query);
-                if(record != null) {
-                    recordList.add(record);
+                List<Record> partRecordList = requestHandler.handler(query);
+                if(partRecordList != null) {
+                    recordList.addAll(partRecordList);
                 }
             } else {
                 logger.error("未能处理的消息: {}", request);

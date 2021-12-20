@@ -16,6 +16,7 @@ import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.net.*;
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -37,7 +38,7 @@ public class IpV4DomainRequestHandler implements RequestHandler {
     }
 
     @Override
-    public Record handler(Query query) {
+    public List<Record> handler(Query query) {
         String domain = query.getDomain();
         Record record = new Record();
         record.setDomain(domain);
@@ -54,11 +55,14 @@ public class IpV4DomainRequestHandler implements RequestHandler {
             record.setRecordClass(RecordClass.IN.value);
             record.setTtl(600);
             record.setData(ipBytes);
-            return record;
+            return Collections.singletonList(record);
         } else {
             logger.info("domain: {} is not config in file, use local resolver", domain);
             //加载
             try {
+                if(true) {
+                    throw new UnknownHostException("on purpose");
+                }
                 InetAddress address = InetAddress.getAllByName(domain)[0];
                 logger.info("domain: {} resolved by local resolver, address: {}", domain, address);
 
@@ -68,7 +72,7 @@ public class IpV4DomainRequestHandler implements RequestHandler {
                     record.setRecordClass(RecordClass.IN.value);
                     record.setTtl(600);
                     record.setData(inet4Address.getAddress());
-                    return record;
+                    return Collections.singletonList(record);
                 } else {
                     throw new ForbidServiceException("不支持的地址类型");
                 }
@@ -84,10 +88,14 @@ public class IpV4DomainRequestHandler implements RequestHandler {
                     header.setAnswerCount((short)0);
                     header.setAuthoritativeNameServerCount((short)0);
                     header.setAdditionalRecordsCount((short)0);
-
                     Request request = new Request();
                     request.setHeader(header);
-                    byte[] domainRequestBytes = request.toBytes();
+                    Query outerQuery = new Query();
+                    outerQuery.setDomain(domain);
+                    outerQuery.setType(query.getType());
+                    outerQuery.setClazz(query.getClazz());
+                    request.setQueryList(Collections.singletonList(outerQuery));
+                    byte[] domainRequestBytes = DnsMessageCodecUtil.encodeRequest(request);
                     DatagramSocket internetSocket = new DatagramSocket();
                     DatagramPacket internetSendPacket = new DatagramPacket(domainRequestBytes, domainRequestBytes.length, InetAddress.getByName("114.114.114.114"), 53);
                     internetSocket.send(internetSendPacket);
@@ -97,12 +105,7 @@ public class IpV4DomainRequestHandler implements RequestHandler {
                     byte[] responseBytes = new byte[packet.getLength()];
                     System.arraycopy(packet.getData(), 0, responseBytes, 0, responseBytes.length);
                     Response response = DnsMessageCodecUtil.decodeResponse(responseBytes);
-                    List<Record> recordList = response.getRecordList();
-                    if(recordList == null || recordList.size() == 0) {
-                        return null;
-                    } else {
-                        return recordList.get(0);
-                    }
+                    return response.getRecordList();
                 } catch (IOException ioe) {
                     throw new RuntimeException(ioe);
                 }

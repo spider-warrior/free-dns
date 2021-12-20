@@ -32,8 +32,6 @@ public class DnsMessageCodecUtil {
     public static Response decodeResponse(byte[] messageBytes) {
         ByteBuffer messageBuffer = ByteBuffer.wrap(messageBytes);
         Header header = decoderHeader(messageBuffer);
-        //request检查
-        responseCheck(header.getFlag());
         Response response = new Response();
         response.setHeader(header);
         List<Query> queryList = decodeQueries(messageBuffer, header.getQueryCount());
@@ -41,6 +39,31 @@ public class DnsMessageCodecUtil {
         List<Record> recordList = decodeRecord(messageBuffer, header.getAnswerCount(), queryList);
         response.setRecordList(recordList);
         return response;
+    }
+
+    public static byte[] encodeRequest(Request request) {
+        ByteBuffer buffer = ByteBuffer.allocate(1024);
+        Header header = request.getHeader();
+        List<Query> queryList = request.getQueryList();
+        //1.transaction id
+        buffer.putShort(header.getTransID());
+        //2.flag
+        buffer.putShort(header.getFlag());
+        //3.question count
+        buffer.putShort((short)queryList.size());
+        //4.answer RRs
+        buffer.putShort((short) 0);
+        //5.authority RRs
+        buffer.putShort((short)0);
+        //6.additional RRs
+        buffer.putShort((short)0);
+        //7.query list
+        encodeQueryList(queryList, buffer);
+        buffer.flip();
+        int len = buffer.limit() - buffer.position();
+        byte[] bytes = new byte[len];
+        buffer.get(bytes);
+        return bytes;
     }
 
     public static byte[] encodeResponse(Response response) {
@@ -176,25 +199,26 @@ public class DnsMessageCodecUtil {
             Map<Integer, String> domainOffsetMap = queryList.stream().collect(HashMap::new, (hashMap, query) -> hashMap.put(query.getOffset(), query.getDomain()), Map::putAll);
             List<Record> recordList = new ArrayList<>();
             while (answerCount-- > 0) {
-                byte length = messageBuffer.get();
                 String domain;
                 //因为域名字符的限制(最大为63)所以byte字节的高两位始终为00，所以使用高两位使用11表示使用偏移量来表示对应的域名,10和01两种状态被保留
                 //前面内容都是定长，所以偏移量一定是从12开始算起
+                byte length = messageBuffer.get();
                 if(length == (byte)0xC0) {
                     int offset = messageBuffer.get();
                     domain = domainOffsetMap.get(offset);
                 } else {
                     domain = decodeDomain(messageBuffer);
                 }
-                short dataLength = messageBuffer.getShort();
-                byte[] data = new byte[dataLength];
-                messageBuffer.get(data);
                 Record record = new Record();
                 record.setDomain(domain);
                 record.setRecordType(messageBuffer.getShort());
                 record.setRecordClass(messageBuffer.getShort());
                 record.setTtl(messageBuffer.getInt());
+                short dataLength = messageBuffer.getShort();
+                byte[] data = new byte[dataLength];
+                messageBuffer.get(data);
                 record.setData(data);
+                recordList.add(record);
             }
             return recordList;
         }
