@@ -47,7 +47,7 @@ public class IpV4DomainQueryHandler implements QueryHandler {
         //读取配置域名
         String ip = ipMappingRepository.getIpv4ByDomainName(domain);
         if(ip != null && ip.length() > 0) {
-            logger.info("===================================== domain : {} use local dns config, response ip: {} =====================================", domain, ip);
+            logger.info("===================================== domain: {} use local config, response ip: {} =====================================", domain, ip);
             String[] ipElements = ip.split("\\.");
             byte[] ipBytes = new byte[ipElements.length];
             for (int i = 0; i < ipElements.length; i++) {

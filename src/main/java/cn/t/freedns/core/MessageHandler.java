@@ -29,7 +29,7 @@ public class MessageHandler {
             60,
             TimeUnit.SECONDS,
             new ArrayBlockingQueue<>(20),
-            runnable -> new Thread(threadGroup, runnable, "dns-request-handle" + threadNumber.getAndIncrement(), 0)
+            runnable -> new Thread(threadGroup, runnable, "dns-request-handle-" + threadNumber.getAndIncrement(), 0)
             );
 
     private final RequestHandler requestHandler = new RequestHandler();
