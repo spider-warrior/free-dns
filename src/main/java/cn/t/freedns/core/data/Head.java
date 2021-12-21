@@ -44,7 +44,7 @@ package cn.t.freedns.core.data;
  * 4、服务器返回TCP DNS响应。
  **/
 
-public class Header {
+public class Head {
 
     /* 会话标识（2字节）*/
     private short transID;

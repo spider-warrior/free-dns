@@ -1,8 +1,7 @@
 package cn.t.freedns.core;
 
-import cn.t.freedns.core.request.Request;
-import cn.t.freedns.core.request.RequestHandlerAdapter;
-import cn.t.freedns.util.DnsMessageCodecUtil;
+import cn.t.freedns.core.data.Request;
+import cn.t.freedns.util.MessageCodecUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -33,10 +32,10 @@ public class MessageHandler {
             runnable -> new Thread(threadGroup, runnable, "dns-request-handle" + threadNumber.getAndIncrement(), 0)
             );
 
-    private final RequestHandlerAdapter requestHandlerAdapter = new RequestHandlerAdapter();
+    private final RequestHandler requestHandler = new RequestHandler();
     public void handle(byte[] msg, MessageContext context) {
-        Request request = DnsMessageCodecUtil.decodeRequest(msg);
-        handleRequestThreadPoolExecutor.submit(() -> requestHandlerAdapter.handle(context, request));
+        Request request = MessageCodecUtil.decodeRequest(msg);
+        handleRequestThreadPoolExecutor.submit(() -> requestHandler.handle(context, request));
     }
 
 }

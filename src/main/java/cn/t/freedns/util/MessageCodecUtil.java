@@ -2,12 +2,12 @@ package cn.t.freedns.util;
 
 
 import cn.t.freedns.ForbidServiceException;
-import cn.t.freedns.core.data.Header;
+import cn.t.freedns.core.data.Head;
 import cn.t.freedns.core.data.Record;
-import cn.t.freedns.core.data.RecordType;
-import cn.t.freedns.core.request.Query;
-import cn.t.freedns.core.request.Request;
-import cn.t.freedns.core.response.Response;
+import cn.t.freedns.core.constants.RecordType;
+import cn.t.freedns.core.data.Query;
+import cn.t.freedns.core.data.Request;
+import cn.t.freedns.core.data.Response;
 
 import java.nio.ByteBuffer;
 import java.util.*;
@@ -16,40 +16,40 @@ import java.util.*;
  * @author yj
  * @since 2020-01-01 10:33
  **/
-public class DnsMessageCodecUtil {
+public class MessageCodecUtil {
 
     public static Request decodeRequest(byte[] messageBytes) {
         ByteBuffer messageBuffer = ByteBuffer.wrap(messageBytes);
-        Header header = decoderHeader(messageBuffer);
+        Head head = decoderHeader(messageBuffer);
         //request检查
-        requestCheck(header.getFlag());
+        requestCheck(head.getFlag());
         Request request = new Request();
-        request.setHeader(header);
-        List<Query> queryList = decodeQueries(messageBuffer, header.getQueryCount());
+        request.setHead(head);
+        List<Query> queryList = decodeQueries(messageBuffer, head.getQueryCount());
         request.setQueryList(queryList);
         return request;
     }
 
     public static Response decodeResponse(byte[] messageBytes) {
         ByteBuffer messageBuffer = ByteBuffer.wrap(messageBytes);
-        Header header = decoderHeader(messageBuffer);
+        Head head = decoderHeader(messageBuffer);
         Response response = new Response();
-        response.setHeader(header);
-        List<Query> queryList = decodeQueries(messageBuffer, header.getQueryCount());
+        response.setHead(head);
+        List<Query> queryList = decodeQueries(messageBuffer, head.getQueryCount());
         response.setQueryList(queryList);
-        List<Record> recordList = decodeRecord(messageBuffer, header.getAnswerCount());
+        List<Record> recordList = decodeRecord(messageBuffer, head.getAnswerCount());
         response.setRecordList(recordList);
         return response;
     }
 
     public static byte[] encodeRequest(Request request) {
         ByteBuffer buffer = ByteBuffer.allocate(1024);
-        Header header = request.getHeader();
+        Head head = request.getHead();
         List<Query> queryList = request.getQueryList();
         //1.transaction id
-        buffer.putShort(header.getTransID());
+        buffer.putShort(head.getTransID());
         //2.flag
-        buffer.putShort(header.getFlag());
+        buffer.putShort(head.getFlag());
         //3.question count
         buffer.putShort((short)queryList.size());
         //4.answer RRs
@@ -69,20 +69,20 @@ public class DnsMessageCodecUtil {
 
     public static byte[] encodeResponse(Response response) {
         ByteBuffer buffer = ByteBuffer.allocate(1024);
-        Header header = response.getHeader();
+        Head head = response.getHead();
         //1.transaction id
-        buffer.putShort(header.getTransID());
+        buffer.putShort(head.getTransID());
         //2.flag
-        buffer.putShort(header.getFlag());
+        buffer.putShort(head.getFlag());
         //3.query count
-        buffer.putShort(header.getQueryCount());
+        buffer.putShort(head.getQueryCount());
         //4.answer count
         List<Record> recordList = response.getRecordList();
         buffer.putShort((short)((recordList== null || recordList.size() == 0) ? 0 : recordList.size()));
         //authority server count
-        buffer.putShort(header.getAuthoritativeNameServerCount());
+        buffer.putShort(head.getAuthoritativeNameServerCount());
         //additional related RRs(Resource Record)
-        buffer.putShort(header.getAdditionalRecordsCount());
+        buffer.putShort(head.getAdditionalRecordsCount());
         //query list
         encodeQueryList(response.getQueryList(), buffer);
         //record list
@@ -95,7 +95,7 @@ public class DnsMessageCodecUtil {
     }
 
     //解析头部
-    private static Header decoderHeader(ByteBuffer messageBuffer) {
+    private static Head decoderHeader(ByteBuffer messageBuffer) {
         //报文Id
         short id = messageBuffer.getShort();
         //报文标志
@@ -109,14 +109,14 @@ public class DnsMessageCodecUtil {
         //附加区域的数量
         short additionalRecordsCount = messageBuffer.getShort();
         //header
-        Header header = new Header();
-        header.setTransID(id);
-        header.setFlag(flag);
-        header.setQueryCount(queryCount);
-        header.setAnswerCount(answerCount);
-        header.setAuthoritativeNameServerCount(authoritativeNameServerCount);
-        header.setAdditionalRecordsCount(additionalRecordsCount);
-        return header;
+        Head head = new Head();
+        head.setTransID(id);
+        head.setFlag(flag);
+        head.setQueryCount(queryCount);
+        head.setAnswerCount(answerCount);
+        head.setAuthoritativeNameServerCount(authoritativeNameServerCount);
+        head.setAdditionalRecordsCount(additionalRecordsCount);
+        return head;
     }
 
     //解析请求
@@ -279,34 +279,34 @@ public class DnsMessageCodecUtil {
     }
 
     private static void requestCheck(short flag) {
-        if(!FlagUtil.isQuery(flag)) {
+        if(!MessageFlagUtil.isQuery(flag)) {
             throw new ForbidServiceException("不是查询");
         }
-        if(!FlagUtil.isStandardQuery(flag)) {
+        if(!MessageFlagUtil.isStandardQuery(flag)) {
             throw new ForbidServiceException("不是正向查询");
         }
-        if(FlagUtil.isQueryTruncated(flag)) {
+        if(MessageFlagUtil.isQueryTruncated(flag)) {
             throw new ForbidServiceException("截断请求");
         }
     }
 
     private static void responseCheck(short flag) {
-        if(!FlagUtil.isResponse(flag)) {
+        if(!MessageFlagUtil.isResponse(flag)) {
             throw new ForbidServiceException("不是响应");
         }
-        if(!FlagUtil.isAuthoritativeServer(flag)) {
+        if(!MessageFlagUtil.isAuthoritativeServer(flag)) {
             throw new ForbidServiceException("不是权威主机");
         }
-        if(FlagUtil.isQueryTruncated(flag)) {
+        if(MessageFlagUtil.isQueryTruncated(flag)) {
             throw new ForbidServiceException("截断响应");
         }
-        if(!FlagUtil.isRecursionDesired(flag)) {
+        if(!MessageFlagUtil.isRecursionDesired(flag)) {
             throw new ForbidServiceException("不是递归查询");
         }
-        if(!FlagUtil.isRecursionAvailable(flag)) {
+        if(!MessageFlagUtil.isRecursionAvailable(flag)) {
             throw new ForbidServiceException("递归查询不可用");
         }
-        if(!FlagUtil.isAuthoritativeAnswer(flag)) {
+        if(!MessageFlagUtil.isAuthoritativeAnswer(flag)) {
             throw new ForbidServiceException("不是权威应答");
         }
     }

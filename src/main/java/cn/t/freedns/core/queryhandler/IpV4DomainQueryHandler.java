@@ -1,16 +1,18 @@
-package cn.t.freedns.core.request;
+package cn.t.freedns.core.queryhandler;
 
 
 import cn.t.freedns.ForbidServiceException;
-import cn.t.freedns.core.data.Header;
+import cn.t.freedns.core.data.Head;
+import cn.t.freedns.core.data.Query;
 import cn.t.freedns.core.data.Record;
-import cn.t.freedns.core.data.RecordClass;
-import cn.t.freedns.core.data.RecordType;
-import cn.t.freedns.core.response.Response;
+import cn.t.freedns.core.constants.RecordClass;
+import cn.t.freedns.core.constants.RecordType;
+import cn.t.freedns.core.data.Request;
+import cn.t.freedns.core.data.Response;
 import cn.t.freedns.repository.IpMappingRepository;
 import cn.t.freedns.repository.MemoryIpMappingRepositoryImpl;
-import cn.t.freedns.util.DnsMessageCodecUtil;
-import cn.t.freedns.util.FlagUtil;
+import cn.t.freedns.util.MessageCodecUtil;
+import cn.t.freedns.util.MessageFlagUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -23,9 +25,9 @@ import java.util.List;
  * @author yj
  * @since 2020-01-01 11:37
  **/
-public class IpV4DomainRequestHandler implements RequestHandler {
+public class IpV4DomainQueryHandler implements QueryHandler {
 
-    private static final Logger logger = LoggerFactory.getLogger(IpV4DomainRequestHandler.class);
+    private static final Logger logger = LoggerFactory.getLogger(IpV4DomainQueryHandler.class);
 
     private final IpMappingRepository ipMappingRepository = new MemoryIpMappingRepositoryImpl();
 
@@ -76,23 +78,23 @@ public class IpV4DomainRequestHandler implements RequestHandler {
             } catch (UnknownHostException e) {
                 logger.info("domain: {} cannot be resolved by local resolver, use 114.114.114.114", domain);
                 try {
-                    Header header = new Header();
-                    header.setTransID((short)System.currentTimeMillis());
+                    Head head = new Head();
+                    head.setTransID((short)System.currentTimeMillis());
                     short flag = 0;
-                    flag = FlagUtil.markRecursionDesired(flag);
-                    header.setFlag(flag);
-                    header.setQueryCount((short)1);
-                    header.setAnswerCount((short)0);
-                    header.setAuthoritativeNameServerCount((short)0);
-                    header.setAdditionalRecordsCount((short)0);
+                    flag = MessageFlagUtil.markRecursionDesired(flag);
+                    head.setFlag(flag);
+                    head.setQueryCount((short)1);
+                    head.setAnswerCount((short)0);
+                    head.setAuthoritativeNameServerCount((short)0);
+                    head.setAdditionalRecordsCount((short)0);
                     Request request = new Request();
-                    request.setHeader(header);
+                    request.setHead(head);
                     Query outerQuery = new Query();
                     outerQuery.setDomain(domain);
                     outerQuery.setType(query.getType());
                     outerQuery.setClazz(query.getClazz());
                     request.setQueryList(Collections.singletonList(outerQuery));
-                    byte[] domainRequestBytes = DnsMessageCodecUtil.encodeRequest(request);
+                    byte[] domainRequestBytes = MessageCodecUtil.encodeRequest(request);
                     DatagramSocket internetSocket = new DatagramSocket();
                     DatagramPacket internetSendPacket = new DatagramPacket(domainRequestBytes, domainRequestBytes.length, InetAddress.getByName("114.114.114.114"), 53);
                     internetSocket.send(internetSendPacket);
@@ -101,7 +103,7 @@ public class IpV4DomainRequestHandler implements RequestHandler {
                     internetSocket.receive(packet);
                     byte[] responseBytes = new byte[packet.getLength()];
                     System.arraycopy(packet.getData(), 0, responseBytes, 0, responseBytes.length);
-                    Response response = DnsMessageCodecUtil.decodeResponse(responseBytes);
+                    Response response = MessageCodecUtil.decodeResponse(responseBytes);
                     return response.getRecordList();
                 } catch (IOException ioe) {
                     throw new RuntimeException(ioe);

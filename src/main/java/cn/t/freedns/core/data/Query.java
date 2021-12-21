@@ -1,4 +1,4 @@
-package cn.t.freedns.core.request;
+package cn.t.freedns.core.data;
 
 /**
  * @author <a href="mailto:spider-warrior@liby.ltd">研发部-蜘蛛大侠</a>

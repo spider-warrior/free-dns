@@ -1,10 +1,11 @@
-package cn.t.freedns.core.request;
+package cn.t.freedns.core.queryhandler;
 
+import cn.t.freedns.core.data.Query;
 import cn.t.freedns.core.data.Record;
 
 import java.util.List;
 
-public interface RequestHandler {
+public interface QueryHandler {
     boolean support(Query query);
     List<Record> handler(Query query);
 }

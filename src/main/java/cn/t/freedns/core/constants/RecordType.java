@@ -1,4 +1,4 @@
-package cn.t.freedns.core.data;
+package cn.t.freedns.core.constants;
 
 public enum RecordType {
     A((short)1, "A", "由域名获得IPv4地址"),

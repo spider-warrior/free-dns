@@ -4,7 +4,7 @@ package cn.t.freedns.util;
  * @author yj
  * @since 2020-01-01 12:47
  **/
-public class FlagUtil {
+public class MessageFlagUtil {
 
     //query
     private static final int QR_BIT_MASK =      0b1000000000000000;

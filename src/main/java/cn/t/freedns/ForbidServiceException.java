@@ -6,7 +6,6 @@ package cn.t.freedns;
  * @since 2020-01-01 13:31
  **/
 public class ForbidServiceException extends RuntimeException {
-
     public ForbidServiceException(String message) {
         super(message);
     }

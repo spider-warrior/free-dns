@@ -1,4 +1,4 @@
-package cn.t.freedns.core.response;
+package cn.t.freedns.core.constants;
 
 /**
  * ResponseCode

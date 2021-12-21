@@ -1,8 +1,9 @@
-package cn.t.freedns.core.request;
+package cn.t.freedns.core.queryhandler;
 
+import cn.t.freedns.core.data.Query;
 import cn.t.freedns.core.data.Record;
-import cn.t.freedns.core.data.RecordClass;
-import cn.t.freedns.core.data.RecordType;
+import cn.t.freedns.core.constants.RecordClass;
+import cn.t.freedns.core.constants.RecordType;
 
 import java.util.Collections;
 import java.util.List;
@@ -14,7 +15,7 @@ import java.util.List;
  * @version V1.0
  * @since 2021-12-20 11:09
  **/
-public class IpV6DomainRequestHandler implements RequestHandler {
+public class IpV6DomainQueryHandler implements QueryHandler {
 
     @Override
     public boolean support(Query query) {

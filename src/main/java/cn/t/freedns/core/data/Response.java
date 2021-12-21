@@ -1,9 +1,9 @@
-package cn.t.freedns.core.response;
+package cn.t.freedns.core.data;
 
 
-import cn.t.freedns.core.data.Header;
+import cn.t.freedns.core.data.Head;
 import cn.t.freedns.core.data.Record;
-import cn.t.freedns.core.request.Query;
+import cn.t.freedns.core.data.Query;
 
 import java.util.List;
 
@@ -14,18 +14,18 @@ import java.util.List;
 public class Response {
 
     //head
-    private Header header;
+    private Head head;
     //query list
     private List<Query> queryList;
     //record list
     private List<Record> recordList;
 
-    public Header getHeader() {
-        return header;
+    public Head getHead() {
+        return head;
     }
 
-    public void setHeader(Header header) {
-        this.header = header;
+    public void setHead(Head head) {
+        this.head = head;
     }
 
     public List<Query> getQueryList() {
@@ -47,7 +47,7 @@ public class Response {
     @Override
     public String toString() {
         return "Response{" +
-                "header=" + header +
+                "header=" + head +
                 ", queryList=" + queryList +
                 ", recordList=" + recordList +
                 '}';

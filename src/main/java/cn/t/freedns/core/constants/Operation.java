@@ -1,4 +1,4 @@
-package cn.t.freedns.core.data;
+package cn.t.freedns.core.constants;
 
 /**
  * Operation
