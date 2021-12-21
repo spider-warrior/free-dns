@@ -1,0 +1,27 @@
+<configuration>
+    <property name="logHome" value="${user.home}/logs/free-dns"/>
+    <property name="pattern" value="%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{36}.%M \\(%line\\) - %msg%n"/>
+    <appender name="Console" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder>
+            <pattern>${pattern}</pattern>
+            <charset>UTF-8</charset>
+        </encoder>
+    </appender>
+    <appender name="Default" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <File>${logHome}/default.log</File>
+        <rollingPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
+            <FileNamePattern>${logHome}/default.%d{yyyy-MM-dd}.%i.log</FileNamePattern>
+            <!-- keep 10 days worth of history -->
+            <maxFileSize>10MB</maxFileSize>
+            <maxHistory>10</maxHistory>
+        </rollingPolicy>
+        <encoder>
+            <pattern>${pattern}</pattern>
+            <charset>UTF-8</charset>
+        </encoder>
+    </appender>
+    <root level="INFO">
+        <appender-ref ref="Console"/>
+        <appender-ref ref="Default"/>
+    </root>
+</configuration>
