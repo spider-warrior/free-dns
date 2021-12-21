@@ -4,6 +4,7 @@ package cn.t.freedns.util;
 import cn.t.freedns.ForbidServiceException;
 import cn.t.freedns.core.data.Header;
 import cn.t.freedns.core.data.Record;
+import cn.t.freedns.core.data.RecordType;
 import cn.t.freedns.core.request.Query;
 import cn.t.freedns.core.request.Request;
 import cn.t.freedns.core.response.Response;
@@ -36,7 +37,7 @@ public class DnsMessageCodecUtil {
         response.setHeader(header);
         List<Query> queryList = decodeQueries(messageBuffer, header.getQueryCount());
         response.setQueryList(queryList);
-        List<Record> recordList = decodeRecord(messageBuffer, header.getAnswerCount(), queryList);
+        List<Record> recordList = decodeRecord(messageBuffer, header.getAnswerCount());
         response.setRecordList(recordList);
         return response;
     }
@@ -144,18 +145,23 @@ public class DnsMessageCodecUtil {
 
     private static void encodeRecordList(List<Record> recordList, List<Query> queryList, ByteBuffer buffer) {
         if(recordList != null && recordList.size() > 0) {
-            Map<String, Query> domainOffsetMap = queryList.stream().collect(HashMap::new, (hashMap, query) -> hashMap.put(query.getDomain(), query), Map::putAll);
+            Map<String, Integer> domainOffsetMap = queryList.stream().collect(HashMap::new, (hashMap, query) -> hashMap.put(query.getDomain(), query.getOffset()), Map::putAll);
             for (Record record : recordList) {
-                encodeRecord(record, domainOffsetMap.get(record.getDomain()), buffer);
+                encodeRecord(record, domainOffsetMap.get(record.getDomain()), buffer, domainOffsetMap);
             }
         }
     }
 
-    private static void encodeRecord(Record record, Query query, ByteBuffer buffer) {
-        //pointer marker
-        buffer.put((byte)0xC0);
-        //offset
-        buffer.put((byte)query.getOffset());
+    private static void encodeRecord(Record record, Integer offset, ByteBuffer buffer, Map<String, Integer> domainOffsetMap) {
+        if(offset == null) {
+            //domain
+            encodeDomain(buffer, record.getDomain());
+        } else {
+            //pointer marker
+            buffer.put((byte)0xC0);
+            //offset
+            buffer.put(offset.byteValue());
+        }
         //type
         buffer.putShort(record.getRecordType());
         //class
@@ -164,6 +170,9 @@ public class DnsMessageCodecUtil {
         buffer.putInt(record.getTtl());
         //length
         buffer.putShort((short)record.getData().length);
+        if(record.getRecordType() == RecordType.CNAM.value) {
+            domainOffsetMap.put(new String(record.getData()), buffer.position());
+        }
         //data
         buffer.put(record.getData());
     }
@@ -175,28 +184,20 @@ public class DnsMessageCodecUtil {
     }
 
     private static void encodeQuery(Query query, ByteBuffer buffer) {
-        String domain = query.getDomain();
-        String[] elements = domain.split("\\.");
-        for(String ele: elements) {
-            //长度
-            buffer.put((byte)ele.length());
-            //value
-            buffer.put(ele.getBytes());
-        }
-        buffer.put((byte)0);
+        //domain
+        encodeDomain(buffer, query.getDomain());
         //type
         buffer.putShort(query.getType());
         //class
         buffer.putShort(query.getClazz());
     }
 
-    private static List<Record> decodeRecord(ByteBuffer messageBuffer, int answerCount, List<Query> queryList) {
+    private static List<Record> decodeRecord(ByteBuffer messageBuffer, int answerCount) {
         if(answerCount < 0) {
             throw new IllegalArgumentException("answerCount小于0");
         } else if(answerCount == 0) {
             return Collections.emptyList();
         } else {
-            Map<Integer, String> domainOffsetMap = queryList.stream().collect(HashMap::new, (hashMap, query) -> hashMap.put(query.getOffset(), query.getDomain()), Map::putAll);
             List<Record> recordList = new ArrayList<>();
             while (answerCount-- > 0) {
                 String domain;
@@ -205,7 +206,10 @@ public class DnsMessageCodecUtil {
                 byte length = messageBuffer.get();
                 if(length == (byte)0xC0) {
                     int offset = messageBuffer.get();
-                    domain = domainOffsetMap.get(offset);
+                    int index = messageBuffer.position();
+                    messageBuffer.position(offset);
+                    domain = decodeDomain(messageBuffer);
+                    messageBuffer.position(index);
                 } else {
                     domain = decodeDomain(messageBuffer);
                 }
@@ -242,6 +246,17 @@ public class DnsMessageCodecUtil {
             builder.deleteCharAt(builder.length() - 1);
         }
         return builder.toString();
+    }
+
+    private static void encodeDomain(ByteBuffer buffer, String domain) {
+        String[] elements = domain.split("\\.");
+        for(String ele: elements) {
+            //长度
+            buffer.put((byte)ele.length());
+            //value
+            buffer.put(ele.getBytes());
+        }
+        buffer.put((byte)0);
     }
 
     private static void requestCheck(short flag) {
