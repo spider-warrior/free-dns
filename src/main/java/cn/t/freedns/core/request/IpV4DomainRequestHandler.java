@@ -2,7 +2,6 @@ package cn.t.freedns.core.request;
 
 
 import cn.t.freedns.ForbidServiceException;
-import cn.t.freedns.util.DnsMessageCodecUtil;
 import cn.t.freedns.core.data.Header;
 import cn.t.freedns.core.data.Record;
 import cn.t.freedns.core.data.RecordClass;
@@ -10,6 +9,7 @@ import cn.t.freedns.core.data.RecordType;
 import cn.t.freedns.core.response.Response;
 import cn.t.freedns.repository.IpMappingRepository;
 import cn.t.freedns.repository.MemoryIpMappingRepositoryImpl;
+import cn.t.freedns.util.DnsMessageCodecUtil;
 import cn.t.freedns.util.FlagUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -60,9 +60,6 @@ public class IpV4DomainRequestHandler implements RequestHandler {
             logger.info("domain: {} is not config in file, use local resolver", domain);
             //加载
             try {
-                if(true) {
-                    throw new UnknownHostException("on purpose");
-                }
                 InetAddress address = InetAddress.getAllByName(domain)[0];
                 logger.info("domain: {} resolved by local resolver, address: {}", domain, address);
 

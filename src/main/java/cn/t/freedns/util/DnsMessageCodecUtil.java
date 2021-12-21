@@ -75,7 +75,7 @@ public class DnsMessageCodecUtil {
         //2.flag
         buffer.putShort(header.getFlag());
         //3.query count
-        buffer.putShort((short) header.getQueryCount());
+        buffer.putShort(header.getQueryCount());
         //4.answer count
         List<Record> recordList = response.getRecordList();
         buffer.putShort((short)((recordList== null || recordList.size() == 0) ? 0 : recordList.size()));
@@ -170,11 +170,19 @@ public class DnsMessageCodecUtil {
         buffer.putInt(record.getTtl());
         //length
         buffer.putShort((short)record.getData().length);
+        int domainOffsetIndex = -1;
         if(record.getRecordType() == RecordType.CNAM.value) {
-            domainOffsetMap.put(new String(record.getData()), buffer.position());
+            domainOffsetIndex = buffer.position();
         }
         //data
         buffer.put(record.getData());
+        if(domainOffsetIndex > -1) {
+            int position = buffer.position();
+            buffer.position(domainOffsetIndex);
+            String domain = decodeDomain(buffer);
+            domainOffsetMap.put(domain, domainOffsetIndex);
+            buffer.position(position);
+        }
     }
 
     private static void encodeQueryList(List<Query> queryList, ByteBuffer buffer) {
@@ -228,24 +236,35 @@ public class DnsMessageCodecUtil {
         }
     }
 
-    private static String decodeString(ByteBuffer messageBuffer, int length) {
-        byte[] partDomain = new byte[length];
-        messageBuffer.get(partDomain);
-        return new String(partDomain);
-    }
-
     private static String decodeDomain(ByteBuffer messageBuffer) {
         byte length;
         StringBuilder builder = new StringBuilder();
-        while ((length = messageBuffer.get()) > 0) {
-            byte[] partDomain = new byte[length];
-            messageBuffer.get(partDomain);
-            builder.append(new String(partDomain)).append(".");
+        while (true) {
+            length = messageBuffer.get();
+            if(length == 0) {
+                break;
+            } else if(length == (byte)0xC0) {
+                int offset = messageBuffer.get();
+                int position = messageBuffer.position();
+                messageBuffer.position(offset);
+                builder.append(decodeDomain(messageBuffer));
+                messageBuffer.position(position);
+                break;
+            } else {
+                String part = decodePartDomain(messageBuffer, length);
+                builder.append(part).append(".");
+            }
         }
-        if(builder.length() > 0) {
+        if(builder.charAt(builder.length() - 1) == '.') {
             builder.deleteCharAt(builder.length() - 1);
         }
         return builder.toString();
+    }
+
+    private static String decodePartDomain(ByteBuffer messageBuffer, int length) {
+        byte[] partDomain = new byte[length];
+        messageBuffer.get(partDomain);
+        return new String(partDomain);
     }
 
     private static void encodeDomain(ByteBuffer buffer, String domain) {
