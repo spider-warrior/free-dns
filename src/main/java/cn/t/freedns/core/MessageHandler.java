@@ -5,10 +5,15 @@ import cn.t.freedns.threadpool.MonitoredThreadFactory;
 import cn.t.freedns.threadpool.MonitoredThreadPool;
 import cn.t.freedns.threadpool.ThreadPoolConstants;
 import cn.t.freedns.threadpool.ThreadPoolMonitor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
+import java.net.InetAddress;
+import java.util.Set;
 import java.util.Timer;
 import java.util.TimerTask;
 import java.util.concurrent.ArrayBlockingQueue;
+import java.util.concurrent.ConcurrentSkipListSet;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
@@ -21,6 +26,8 @@ import java.util.concurrent.TimeUnit;
  **/
 public class MessageHandler {
 
+    private static final Logger logger = LoggerFactory.getLogger(MessageHandler.class);
+
     private final ThreadGroup ioIntensiveThreadGroup = new ThreadGroup(ThreadPoolConstants.IO_INTENSIVE_THREAD_GROUP);
     private final ThreadPoolExecutor ioIntensiveThreadPoolExecutor = new MonitoredThreadPool(
             ThreadPoolConstants.IO_CORE_POOL_SIZE,
@@ -32,9 +39,27 @@ public class MessageHandler {
             ThreadPoolConstants.IO_INTENSIVE_THREAD_GROUP
             );
 
+    private final Set<String> uniqueRequestIdSet = new ConcurrentSkipListSet<>();
     private final RequestHandler requestHandler = new RequestHandler();
+
     public void handle(Request request, MessageContext context, RequestProcessTracer requestProcessTracer) {
-        ioIntensiveThreadPoolExecutor.submit(() -> requestHandler.handle(request, context, requestProcessTracer));
+        ioIntensiveThreadPoolExecutor.submit(() -> {
+            String uniqueRequestId = uniqueRequestId(context.getRemoteInetAddress(), context.getRemotePort(), request.getHead().getTransID());
+            boolean success = uniqueRequestIdSet.add(uniqueRequestId);
+            if(success) {
+                try {
+                    requestHandler.handle(request, context, requestProcessTracer);
+                } finally {
+                    uniqueRequestIdSet.remove(uniqueRequestId);
+                }
+            } else {
+                logger.info("拦截请求, remoteInetAddress: {}, remotePort: {}, transId: {}", context.getRemoteInetAddress(), context.getRemotePort(), request.getHead().getTransID());
+            }
+        });
+    }
+
+    private String uniqueRequestId(InetAddress remoteInetAddress, int remotePort, short transId) {
+        return remoteInetAddress.getHostAddress() + ":" + remotePort + "(" + transId + ")";
     }
 
     public MessageHandler() {

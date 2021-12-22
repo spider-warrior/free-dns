@@ -61,7 +61,6 @@ public class IpV4DomainQueryHandler implements QueryHandler {
                 //trace [io thread thirty party search end time]
                 requestProcessTracer.setIoIntensiveThreadThirtyPartySearchEndTime(System.currentTimeMillis());
             }
-//            recordList = tryThirtyPartyNodeResourceRecords(query.getType(), query.getClazz(), query.getDomain());
         }
         return recordList;
     }

@@ -1,6 +1,8 @@
 package cn.t.freedns.core;
 
 
+import cn.t.freedns.core.constants.RecordClass;
+import cn.t.freedns.core.constants.RecordType;
 import cn.t.freedns.core.data.*;
 import cn.t.freedns.core.queryhandler.IpV4DomainQueryHandler;
 import cn.t.freedns.core.queryhandler.IpV6DomainQueryHandler;
@@ -32,7 +34,7 @@ public class RequestHandler {
             QueryHandler queryHandler = selectMessageHandler(query);
             if(queryHandler != null) {
                 //trace [domain]
-                requestProcessTracer.addDomain(query.getDomain());
+                requestProcessTracer.addDomain(query.getDomain() + "(" + RecordType.getRecordType(query.getType()) + "," + RecordClass.getRecordClass(query.getClazz()) + ")");
                 List<Record> partRecordList = queryHandler.handle(query, messageContext, requestProcessTracer);
                 if(partRecordList != null) {
                     recordList.addAll(partRecordList);
