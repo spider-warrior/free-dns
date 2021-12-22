@@ -40,6 +40,8 @@ public class RequestHandler {
         for (Query query : queryList) {
             QueryHandler queryHandler = selectMessageHandler(query);
             if(queryHandler != null) {
+                //trace [domain]
+                messageContext.addDomain(query.getDomain());
                 List<Record> partRecordList = queryHandler.handler(query);
                 if(partRecordList != null) {
                     recordList.addAll(partRecordList);

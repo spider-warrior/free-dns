@@ -56,6 +56,10 @@ public class MessageContext {
         this.messageLifeStyleTrace.setTraceId(traceId);
     }
 
+    public void addDomain(String domain) {
+        this.messageLifeStyleTrace.addDomain(domain);
+    }
+
     public void setReceiveTime(long receiveTime) {
         this.messageLifeStyleTrace.setReceiveTime(receiveTime);
     }

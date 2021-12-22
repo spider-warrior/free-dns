@@ -1,5 +1,8 @@
 package cn.t.freedns.core;
 
+import java.util.ArrayList;
+import java.util.List;
+
 /**
  * MessageLifeStyleTrace
  *
@@ -10,6 +13,7 @@ package cn.t.freedns.core;
 public class MessageLifeStyleTrace {
 
     private long traceId;
+    private final List<String> domainList = new ArrayList<>();
     private long receiveTime;
     private long cpuIntensiveThreadStartTime;
     private long cpuIntensiveThreadEndTime;
@@ -22,6 +26,14 @@ public class MessageLifeStyleTrace {
 
     public void setTraceId(long traceId) {
         this.traceId = traceId;
+    }
+
+    public void addDomain(String domain) {
+        this.domainList.add(domain);
+    }
+
+    public List<String> getDomainList() {
+        return domainList;
     }
 
     public long getReceiveTime() {
@@ -65,7 +77,7 @@ public class MessageLifeStyleTrace {
     }
 
     public String debugDuration() {
-        return "debug job: " + traceId
+        return "debug job: " + traceId + ", domainList: " + domainList
                 + "\r\nreceiveTime                 -> cpuIntensiveThreadStartTime: " + (cpuIntensiveThreadStartTime - receiveTime)
                 + "\r\ncpuIntensiveThreadStartTime ->   cpuIntensiveThreadEndTime: " + (cpuIntensiveThreadEndTime - cpuIntensiveThreadStartTime)
                 + "\r\ncpuIntensiveThreadEndTime   ->  ioIntensiveThreadStartTime: " + (ioIntensiveThreadStartTime - cpuIntensiveThreadEndTime)
@@ -76,6 +88,7 @@ public class MessageLifeStyleTrace {
     public String toString() {
         return "MessageLifeStyleTrace{" +
                 "traceId=" + traceId +
+                ", domainList=" + domainList +
                 ", receiveTime=" + receiveTime +
                 ", cpuIntensiveThreadStartTime=" + cpuIntensiveThreadStartTime +
                 ", cpuIntensiveThreadEndTime=" + cpuIntensiveThreadEndTime +

@@ -37,13 +37,13 @@ public class MessageHandler {
         ioIntensiveThreadPoolExecutor.submit(() -> requestHandler.handle(context, request));
     }
 
-//    public MessageHandler() {
-//        ThreadPoolMonitor threadPoolMonitor = new ThreadPoolMonitor(ThreadPoolConstants.IO_INTENSIVE_THREAD_GROUP, ioIntensiveThreadPoolExecutor);
-//        new Timer().schedule(new TimerTask() {
-//            @Override
-//            public void run() {
-//                threadPoolMonitor.run();
-//            }
-//        }, 3000, 5000);
-//    }
+    public MessageHandler() {
+        ThreadPoolMonitor threadPoolMonitor = new ThreadPoolMonitor(ThreadPoolConstants.IO_INTENSIVE_THREAD_GROUP, ioIntensiveThreadPoolExecutor);
+        new Timer().schedule(new TimerTask() {
+            @Override
+            public void run() {
+                threadPoolMonitor.run();
+            }
+        }, 3000, 1000);
+    }
 }
