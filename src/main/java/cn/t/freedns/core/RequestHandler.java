@@ -26,7 +26,6 @@ public class RequestHandler {
     public void handle(MessageContext messageContext, Request request) {
         //trace [io thread start time]
         messageContext.setIoIntensiveThreadStartTime(System.currentTimeMillis());
-        Head requestHead = request.getHead();
         List<Query> queryList = request.getQueryList();
         List<Record> recordList = new ArrayList<>(queryList.size());
         for (Query query : queryList) {
@@ -34,7 +33,7 @@ public class RequestHandler {
             if(queryHandler != null) {
                 //trace [domain]
                 messageContext.addDomain(query.getDomain());
-                List<Record> partRecordList = queryHandler.handler(query);
+                List<Record> partRecordList = queryHandler.handler(messageContext, query);
                 if(partRecordList != null) {
                     recordList.addAll(partRecordList);
                 }

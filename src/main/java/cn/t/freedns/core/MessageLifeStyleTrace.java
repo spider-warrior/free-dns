@@ -19,6 +19,13 @@ public class MessageLifeStyleTrace {
     private long cpuIntensiveThreadEndTime;
     private long ioIntensiveThreadStartTime;
     private long ioIntensiveThreadEndTime;
+    private long ioIntensiveThreadLocalConfigSearchStartTime;
+    private long ioIntensiveThreadLocalConfigSearchEndTime;
+    private long ioIntensiveThreadLocalNodeSearchStartTime;
+    private long ioIntensiveThreadLocalNodeSearchEndTime;
+    private long ioIntensiveThreadThirtyPartySearchStartTime;
+    private long ioIntensiveThreadThirtyPartySearchEndTime;
+
 
     public long getTraceId() {
         return traceId;
@@ -76,12 +83,63 @@ public class MessageLifeStyleTrace {
         this.ioIntensiveThreadEndTime = ioIntensiveThreadEndTime;
     }
 
+    public long getIoIntensiveThreadLocalConfigSearchStartTime() {
+        return ioIntensiveThreadLocalConfigSearchStartTime;
+    }
+
+    public void setIoIntensiveThreadLocalConfigSearchStartTime(long ioIntensiveThreadLocalConfigSearchStartTime) {
+        this.ioIntensiveThreadLocalConfigSearchStartTime = ioIntensiveThreadLocalConfigSearchStartTime;
+    }
+
+    public long getIoIntensiveThreadLocalConfigSearchEndTime() {
+        return ioIntensiveThreadLocalConfigSearchEndTime;
+    }
+
+    public void setIoIntensiveThreadLocalConfigSearchEndTime(long ioIntensiveThreadLocalConfigSearchEndTime) {
+        this.ioIntensiveThreadLocalConfigSearchEndTime = ioIntensiveThreadLocalConfigSearchEndTime;
+    }
+
+    public long getIoIntensiveThreadLocalNodeSearchStartTime() {
+        return ioIntensiveThreadLocalNodeSearchStartTime;
+    }
+
+    public void setIoIntensiveThreadLocalNodeSearchStartTime(long ioIntensiveThreadLocalNodeSearchStartTime) {
+        this.ioIntensiveThreadLocalNodeSearchStartTime = ioIntensiveThreadLocalNodeSearchStartTime;
+    }
+
+    public long getIoIntensiveThreadLocalNodeSearchEndTime() {
+        return ioIntensiveThreadLocalNodeSearchEndTime;
+    }
+
+    public void setIoIntensiveThreadLocalNodeSearchEndTime(long ioIntensiveThreadLocalNodeSearchEndTime) {
+        this.ioIntensiveThreadLocalNodeSearchEndTime = ioIntensiveThreadLocalNodeSearchEndTime;
+    }
+
+    public long getIoIntensiveThreadThirtyPartySearchStartTime() {
+        return ioIntensiveThreadThirtyPartySearchStartTime;
+    }
+
+    public void setIoIntensiveThreadThirtyPartySearchStartTime(long ioIntensiveThreadThirtyPartySearchStartTime) {
+        this.ioIntensiveThreadThirtyPartySearchStartTime = ioIntensiveThreadThirtyPartySearchStartTime;
+    }
+
+    public long getIoIntensiveThreadThirtyPartySearchEndTime() {
+        return ioIntensiveThreadThirtyPartySearchEndTime;
+    }
+
+    public void setIoIntensiveThreadThirtyPartySearchEndTime(long ioIntensiveThreadThirtyPartySearchEndTime) {
+        this.ioIntensiveThreadThirtyPartySearchEndTime = ioIntensiveThreadThirtyPartySearchEndTime;
+    }
+
     public String debugDuration() {
         return "debug job: " + traceId + ", domainList: " + domainList
-                + "\r\nreceiveTime                 -> cpuIntensiveThreadStartTime: " + (cpuIntensiveThreadStartTime - receiveTime)
-                + "\r\ncpuIntensiveThreadStartTime ->   cpuIntensiveThreadEndTime: " + (cpuIntensiveThreadEndTime - cpuIntensiveThreadStartTime)
-                + "\r\ncpuIntensiveThreadEndTime   ->  ioIntensiveThreadStartTime: " + (ioIntensiveThreadStartTime - cpuIntensiveThreadEndTime)
-                + "\r\nioIntensiveThreadStartTime  ->    ioIntensiveThreadEndTime: " + (ioIntensiveThreadEndTime - ioIntensiveThreadStartTime);
+                + "\r\nreceiveTime                 ->   cpuIntensiveThreadStartTime: " + (cpuIntensiveThreadStartTime - receiveTime)
+                + "\r\ncpuIntensiveThreadStartTime ->   cpuIntensiveThreadEndTime  : " + (cpuIntensiveThreadEndTime - cpuIntensiveThreadStartTime)
+                + "\r\ncpuIntensiveThreadEndTime   ->   ioIntensiveThreadStartTime : " + (ioIntensiveThreadStartTime - cpuIntensiveThreadEndTime)
+                + "\r\nioIntensiveThreadStartTime  ->   ioIntensiveThreadEndTime   : " + (ioIntensiveThreadEndTime - ioIntensiveThreadStartTime)
+                + "\r\n    -|ioIntensiveThreadLocalConfigSearchStartTime  ->    ioIntensiveThreadLocalConfigSearchEndTime: " + (ioIntensiveThreadLocalConfigSearchEndTime - ioIntensiveThreadLocalConfigSearchStartTime)
+                + "\r\n    -|ioIntensiveThreadLocalNodeSearchStartTime    ->    ioIntensiveThreadLocalNodeSearchEndTime  : " + (ioIntensiveThreadLocalNodeSearchEndTime - ioIntensiveThreadLocalNodeSearchStartTime)
+                + "\r\n    -|ioIntensiveThreadThirtyPartySearchStartTime  ->    ioIntensiveThreadThirtyPartySearchEndTime: " + (ioIntensiveThreadThirtyPartySearchEndTime - ioIntensiveThreadThirtyPartySearchStartTime);
     }
 
     @Override
@@ -94,6 +152,12 @@ public class MessageLifeStyleTrace {
                 ", cpuIntensiveThreadEndTime=" + cpuIntensiveThreadEndTime +
                 ", ioIntensiveThreadStartTime=" + ioIntensiveThreadStartTime +
                 ", ioIntensiveThreadEndTime=" + ioIntensiveThreadEndTime +
+                ", ioIntensiveThreadLocalConfigSearchStartTime=" + ioIntensiveThreadLocalConfigSearchStartTime +
+                ", ioIntensiveThreadLocalConfigSearchEndTime=" + ioIntensiveThreadLocalConfigSearchEndTime +
+                ", ioIntensiveThreadLocalNodeSearchStartTime=" + ioIntensiveThreadLocalNodeSearchStartTime +
+                ", ioIntensiveThreadLocalNodeSearchEndTime=" + ioIntensiveThreadLocalNodeSearchEndTime +
+                ", ioIntensiveThreadThirtyPartySearchStartTime=" + ioIntensiveThreadThirtyPartySearchStartTime +
+                ", ioIntensiveThreadThirtyPartySearchEndTime=" + ioIntensiveThreadThirtyPartySearchEndTime +
                 '}';
     }
 }

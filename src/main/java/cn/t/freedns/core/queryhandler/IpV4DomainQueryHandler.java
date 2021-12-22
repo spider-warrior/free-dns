@@ -2,6 +2,7 @@ package cn.t.freedns.core.queryhandler;
 
 
 import cn.t.freedns.ForbidServiceException;
+import cn.t.freedns.core.MessageContext;
 import cn.t.freedns.core.constants.RecordClass;
 import cn.t.freedns.core.constants.RecordType;
 import cn.t.freedns.core.data.*;
@@ -33,6 +34,35 @@ public class IpV4DomainQueryHandler implements QueryHandler {
         return query != null
                 && RecordType.A == RecordType.getRecordType(query.getType())
                 && RecordClass.IN == RecordClass.getRecordClass(query.getClazz());
+    }
+
+    @Override
+    public List<Record> handler(MessageContext messageContext, Query query) {
+        //trace [io thread local config search start time]
+        messageContext.setIoIntensiveThreadLocalConfigSearchStartTime(System.currentTimeMillis());
+        List<Record> recordList = tryLocalConfigResourceRecords(query.getDomain());
+        //trace [io thread local config search end time]
+        messageContext.setIoIntensiveThreadLocalConfigSearchEndTime(System.currentTimeMillis());
+        if(recordList.isEmpty()) {
+            try {
+                //trace [io thread local node search start time]
+                messageContext.setIoIntensiveThreadLocalNodeSearchStartTime(System.currentTimeMillis());
+                recordList = tryLocalNodeResourceRecords(query.getDomain());
+                //trace [io thread local node search end time]
+                messageContext.setIoIntensiveThreadLocalNodeSearchEndTime(System.currentTimeMillis());
+            } catch (UnknownHostException e) {
+                long now = System.currentTimeMillis();
+                //trace [io thread local node search end time]
+                messageContext.setIoIntensiveThreadLocalNodeSearchEndTime(now);
+                //trace [io thread thirty party search start time]
+                messageContext.setIoIntensiveThreadThirtyPartySearchStartTime(now);
+                recordList = tryThirtyPartyNodeResourceRecords(query.getType(), query.getClazz(), query.getDomain());
+                //trace [io thread thirty party search end time]
+                messageContext.setIoIntensiveThreadThirtyPartySearchEndTime(System.currentTimeMillis());
+            }
+//            recordList = tryThirtyPartyNodeResourceRecords(query.getType(), query.getClazz(), query.getDomain());
+        }
+        return recordList;
     }
 
     //本地配置
@@ -108,19 +138,5 @@ public class IpV4DomainQueryHandler implements QueryHandler {
         } catch (IOException ioe) {
             throw new RuntimeException(ioe);
         }
-    }
-
-    @Override
-    public List<Record> handler(Query query) {
-        List<Record> recordList = tryLocalConfigResourceRecords(query.getDomain());
-        if(recordList.isEmpty()) {
-            try {
-                recordList = tryLocalNodeResourceRecords(query.getDomain());
-            } catch (UnknownHostException e) {
-                recordList = tryThirtyPartyNodeResourceRecords(query.getType(), query.getClazz(), query.getDomain());
-            }
-//            recordList = tryThirtyPartyNodeResourceRecords(query.getType(), query.getClazz(), query.getDomain());
-        }
-        return recordList;
     }
 }

@@ -79,5 +79,29 @@ public class MessageContext {
     public void setIoIntensiveThreadEndTime(long iouIntensiveThreadEndTime) {
         this.messageLifeStyleTrace.setIoIntensiveThreadEndTime(iouIntensiveThreadEndTime);
     }
+
+    public void setIoIntensiveThreadLocalConfigSearchStartTime(long ioIntensiveThreadLocalConfigSearchStartTime) {
+        this.messageLifeStyleTrace.setIoIntensiveThreadLocalConfigSearchStartTime(ioIntensiveThreadLocalConfigSearchStartTime);
+    }
+
+    public void setIoIntensiveThreadLocalConfigSearchEndTime(long ioIntensiveThreadLocalConfigSearchEndTime) {
+        this.messageLifeStyleTrace.setIoIntensiveThreadLocalConfigSearchEndTime(ioIntensiveThreadLocalConfigSearchEndTime);
+    }
+
+    public void setIoIntensiveThreadLocalNodeSearchStartTime(long ioIntensiveThreadLocalNodeSearchStartTime) {
+        this.messageLifeStyleTrace.setIoIntensiveThreadLocalNodeSearchStartTime(ioIntensiveThreadLocalNodeSearchStartTime);
+    }
+
+    public void setIoIntensiveThreadLocalNodeSearchEndTime(long ioIntensiveThreadLocalNodeSearchEndTime) {
+        this.messageLifeStyleTrace.setIoIntensiveThreadLocalNodeSearchEndTime(ioIntensiveThreadLocalNodeSearchEndTime);
+    }
+
+    public void setIoIntensiveThreadThirtyPartySearchStartTime(long ioIntensiveThreadThirtyPartySearchStartTime) {
+        this.messageLifeStyleTrace.setIoIntensiveThreadThirtyPartySearchStartTime(ioIntensiveThreadThirtyPartySearchStartTime);
+    }
+
+    public void setIoIntensiveThreadThirtyPartySearchEndTime(long ioIntensiveThreadThirtyPartySearchEndTime) {
+        this.messageLifeStyleTrace.setIoIntensiveThreadThirtyPartySearchEndTime(ioIntensiveThreadThirtyPartySearchEndTime);
+    }
     /* ************************************************************************************* */
 }
