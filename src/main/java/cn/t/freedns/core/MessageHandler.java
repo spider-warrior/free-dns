@@ -33,8 +33,8 @@ public class MessageHandler {
             );
 
     private final RequestHandler requestHandler = new RequestHandler();
-    public void handle(Request request, MessageContext context) {
-        ioIntensiveThreadPoolExecutor.submit(() -> requestHandler.handle(context, request));
+    public void handle(Request request, MessageContext context, RequestProcessTracer requestProcessTracer) {
+        ioIntensiveThreadPoolExecutor.submit(() -> requestHandler.handle(request, context, requestProcessTracer));
     }
 
     public MessageHandler() {

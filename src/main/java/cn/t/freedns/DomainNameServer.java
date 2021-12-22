@@ -2,6 +2,7 @@ package cn.t.freedns;
 
 import cn.t.freedns.core.MessageContext;
 import cn.t.freedns.core.MessageHandler;
+import cn.t.freedns.core.RequestProcessTracer;
 import cn.t.freedns.core.data.Request;
 import cn.t.freedns.threadpool.MonitoredThreadFactory;
 import cn.t.freedns.threadpool.MonitoredThreadPool;
@@ -47,23 +48,24 @@ public class DomainNameServer {
         while (true) {
             DatagramPacket packet = new DatagramPacket(buffer, buffer.length);
             MessageContext messageContext = new MessageContext();
+            RequestProcessTracer requestProcessTracer = new RequestProcessTracer();
             // trace [id]
-            messageContext.setTraceId(new Random().nextLong());
+            requestProcessTracer.setTraceId(new Random().nextLong());
             socket.receive(packet);
             //trace [receive time]
-            messageContext.setReceiveTime(System.currentTimeMillis());
+            requestProcessTracer.setReceiveTime(System.currentTimeMillis());
             byte[] messageBytes = new byte[packet.getLength()];
             System.arraycopy(packet.getData(), 0, messageBytes, 0, packet.getLength());
             cpuIntensiveThreadPoolExecutor.submit(() -> {
                 //trace [cpu thread start time]
-                messageContext.setCpuIntensiveThreadStartTime(System.currentTimeMillis());
+                requestProcessTracer.setCpuIntensiveThreadStartTime(System.currentTimeMillis());
                 messageContext.setServerSocket(socket);
                 messageContext.setRemoteInetAddress(packet.getAddress());
                 messageContext.setRemotePort(packet.getPort());
                 Request request = MessageCodecUtil.decodeRequest(messageBytes);
-                messageHandler.handle(request, messageContext);
+                messageHandler.handle(request, messageContext, requestProcessTracer);
                 //trace [cpu thread end time]
-                messageContext.setCpuIntensiveThreadEndTime(System.currentTimeMillis());
+                requestProcessTracer.setCpuIntensiveThreadEndTime(System.currentTimeMillis());
             });
         }
     }

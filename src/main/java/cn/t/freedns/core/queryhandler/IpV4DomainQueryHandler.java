@@ -3,6 +3,7 @@ package cn.t.freedns.core.queryhandler;
 
 import cn.t.freedns.ForbidServiceException;
 import cn.t.freedns.core.MessageContext;
+import cn.t.freedns.core.RequestProcessTracer;
 import cn.t.freedns.core.constants.RecordClass;
 import cn.t.freedns.core.constants.RecordType;
 import cn.t.freedns.core.data.*;
@@ -37,28 +38,28 @@ public class IpV4DomainQueryHandler implements QueryHandler {
     }
 
     @Override
-    public List<Record> handler(MessageContext messageContext, Query query) {
+    public List<Record> handler(Query query, MessageContext messageContext, RequestProcessTracer requestProcessTracer) {
         //trace [io thread local config search start time]
-        messageContext.setIoIntensiveThreadLocalConfigSearchStartTime(System.currentTimeMillis());
+        requestProcessTracer.setIoIntensiveThreadLocalConfigSearchStartTime(System.currentTimeMillis());
         List<Record> recordList = tryLocalConfigResourceRecords(query.getDomain());
         //trace [io thread local config search end time]
-        messageContext.setIoIntensiveThreadLocalConfigSearchEndTime(System.currentTimeMillis());
+        requestProcessTracer.setIoIntensiveThreadLocalConfigSearchEndTime(System.currentTimeMillis());
         if(recordList.isEmpty()) {
             try {
                 //trace [io thread local node search start time]
-                messageContext.setIoIntensiveThreadLocalNodeSearchStartTime(System.currentTimeMillis());
+                requestProcessTracer.setIoIntensiveThreadLocalNodeSearchStartTime(System.currentTimeMillis());
                 recordList = tryLocalNodeResourceRecords(query.getDomain());
                 //trace [io thread local node search end time]
-                messageContext.setIoIntensiveThreadLocalNodeSearchEndTime(System.currentTimeMillis());
+                requestProcessTracer.setIoIntensiveThreadLocalNodeSearchEndTime(System.currentTimeMillis());
             } catch (UnknownHostException e) {
                 long now = System.currentTimeMillis();
                 //trace [io thread local node search end time]
-                messageContext.setIoIntensiveThreadLocalNodeSearchEndTime(now);
+                requestProcessTracer.setIoIntensiveThreadLocalNodeSearchEndTime(now);
                 //trace [io thread thirty party search start time]
-                messageContext.setIoIntensiveThreadThirtyPartySearchStartTime(now);
+                requestProcessTracer.setIoIntensiveThreadThirtyPartySearchStartTime(now);
                 recordList = tryThirtyPartyNodeResourceRecords(query.getType(), query.getClazz(), query.getDomain());
                 //trace [io thread thirty party search end time]
-                messageContext.setIoIntensiveThreadThirtyPartySearchEndTime(System.currentTimeMillis());
+                requestProcessTracer.setIoIntensiveThreadThirtyPartySearchEndTime(System.currentTimeMillis());
             }
 //            recordList = tryThirtyPartyNodeResourceRecords(query.getType(), query.getClazz(), query.getDomain());
         }

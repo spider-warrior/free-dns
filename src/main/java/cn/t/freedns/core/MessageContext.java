@@ -11,8 +11,6 @@ import java.net.InetAddress;
  * @since 2021-12-17 15:28
  **/
 public class MessageContext {
-    private final RequestProcessTracer requestProcessTracer = new RequestProcessTracer();
-
     private DatagramSocket serverSocket;
     private InetAddress remoteInetAddress;
     private int remotePort;
@@ -46,62 +44,4 @@ public class MessageContext {
     public void setRemotePort(int remotePort) {
         this.remotePort = remotePort;
     }
-
-    public RequestProcessTracer getRequestProcessTracer() {
-        return requestProcessTracer;
-    }
-
-    /* 静态代理方法 */
-    public void setTraceId(long traceId) {
-        this.requestProcessTracer.setTraceId(traceId);
-    }
-
-    public void addDomain(String domain) {
-        this.requestProcessTracer.addDomain(domain);
-    }
-
-    public void setReceiveTime(long receiveTime) {
-        this.requestProcessTracer.setReceiveTime(receiveTime);
-    }
-
-    public void setCpuIntensiveThreadStartTime(long cpuIntensiveThreadStartTime) {
-        this.requestProcessTracer.setCpuIntensiveThreadStartTime(cpuIntensiveThreadStartTime);
-    }
-
-    public void setCpuIntensiveThreadEndTime(long cpuIntensiveThreadEndTime) {
-        this.requestProcessTracer.setCpuIntensiveThreadEndTime(cpuIntensiveThreadEndTime);
-    }
-
-    public void setIoIntensiveThreadStartTime(long ioIntensiveThreadStartTime) {
-        this.requestProcessTracer.setIoIntensiveThreadStartTime(ioIntensiveThreadStartTime);
-    }
-
-    public void setIoIntensiveThreadEndTime(long iouIntensiveThreadEndTime) {
-        this.requestProcessTracer.setIoIntensiveThreadEndTime(iouIntensiveThreadEndTime);
-    }
-
-    public void setIoIntensiveThreadLocalConfigSearchStartTime(long ioIntensiveThreadLocalConfigSearchStartTime) {
-        this.requestProcessTracer.setIoIntensiveThreadLocalConfigSearchStartTime(ioIntensiveThreadLocalConfigSearchStartTime);
-    }
-
-    public void setIoIntensiveThreadLocalConfigSearchEndTime(long ioIntensiveThreadLocalConfigSearchEndTime) {
-        this.requestProcessTracer.setIoIntensiveThreadLocalConfigSearchEndTime(ioIntensiveThreadLocalConfigSearchEndTime);
-    }
-
-    public void setIoIntensiveThreadLocalNodeSearchStartTime(long ioIntensiveThreadLocalNodeSearchStartTime) {
-        this.requestProcessTracer.setIoIntensiveThreadLocalNodeSearchStartTime(ioIntensiveThreadLocalNodeSearchStartTime);
-    }
-
-    public void setIoIntensiveThreadLocalNodeSearchEndTime(long ioIntensiveThreadLocalNodeSearchEndTime) {
-        this.requestProcessTracer.setIoIntensiveThreadLocalNodeSearchEndTime(ioIntensiveThreadLocalNodeSearchEndTime);
-    }
-
-    public void setIoIntensiveThreadThirtyPartySearchStartTime(long ioIntensiveThreadThirtyPartySearchStartTime) {
-        this.requestProcessTracer.setIoIntensiveThreadThirtyPartySearchStartTime(ioIntensiveThreadThirtyPartySearchStartTime);
-    }
-
-    public void setIoIntensiveThreadThirtyPartySearchEndTime(long ioIntensiveThreadThirtyPartySearchEndTime) {
-        this.requestProcessTracer.setIoIntensiveThreadThirtyPartySearchEndTime(ioIntensiveThreadThirtyPartySearchEndTime);
-    }
-    /* ************************************************************************************* */
 }

@@ -23,17 +23,17 @@ public class RequestHandler {
     private static final Logger logger = LoggerFactory.getLogger(RequestHandler.class);
 
     private final List<QueryHandler> queryHandlerList = new ArrayList<>();
-    public void handle(MessageContext messageContext, Request request) {
+    public void handle(Request request, MessageContext messageContext, RequestProcessTracer requestProcessTracer) {
         //trace [io thread start time]
-        messageContext.setIoIntensiveThreadStartTime(System.currentTimeMillis());
+        requestProcessTracer.setIoIntensiveThreadStartTime(System.currentTimeMillis());
         List<Query> queryList = request.getQueryList();
         List<Record> recordList = new ArrayList<>(queryList.size());
         for (Query query : queryList) {
             QueryHandler queryHandler = selectMessageHandler(query);
             if(queryHandler != null) {
                 //trace [domain]
-                messageContext.addDomain(query.getDomain());
-                List<Record> partRecordList = queryHandler.handler(messageContext, query);
+                requestProcessTracer.addDomain(query.getDomain());
+                List<Record> partRecordList = queryHandler.handler(query, messageContext, requestProcessTracer);
                 if(partRecordList != null) {
                     recordList.addAll(partRecordList);
                 }
@@ -52,8 +52,8 @@ public class RequestHandler {
             logger.error("响应客户端失败", e);
         }
         //trace [io thread end time]
-        messageContext.setIoIntensiveThreadEndTime(System.currentTimeMillis());
-        System.out.println(messageContext.getRequestProcessTracer().debugDuration());
+        requestProcessTracer.setIoIntensiveThreadEndTime(System.currentTimeMillis());
+        System.out.println(requestProcessTracer.debugDuration());
     }
     private QueryHandler selectMessageHandler(Query query) {
         for(QueryHandler queryHandler : queryHandlerList) {

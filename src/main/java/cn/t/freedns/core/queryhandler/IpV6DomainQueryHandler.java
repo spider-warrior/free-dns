@@ -1,6 +1,7 @@
 package cn.t.freedns.core.queryhandler;
 
 import cn.t.freedns.core.MessageContext;
+import cn.t.freedns.core.RequestProcessTracer;
 import cn.t.freedns.core.data.Query;
 import cn.t.freedns.core.data.Record;
 import cn.t.freedns.core.constants.RecordClass;
@@ -27,7 +28,7 @@ public class IpV6DomainQueryHandler implements QueryHandler {
     }
 
     @Override
-    public List<Record> handler(MessageContext messageContext, Query query) {
+    public List<Record> handler(Query query, MessageContext messageContext, RequestProcessTracer requestProcessTracer) {
         return Collections.emptyList();
     }
 }
