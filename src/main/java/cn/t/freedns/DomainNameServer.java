@@ -2,13 +2,22 @@ package cn.t.freedns;
 
 import cn.t.freedns.core.MessageContext;
 import cn.t.freedns.core.MessageHandler;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import cn.t.freedns.core.data.Request;
+import cn.t.freedns.threadpool.MonitoredThreadFactory;
+import cn.t.freedns.threadpool.MonitoredThreadPool;
+import cn.t.freedns.threadpool.ThreadPoolConstants;
+import cn.t.freedns.threadpool.ThreadPoolMonitor;
+import cn.t.freedns.util.MessageCodecUtil;
 
 import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
-import java.net.InetAddress;
+import java.util.Random;
+import java.util.Timer;
+import java.util.TimerTask;
+import java.util.concurrent.ArrayBlockingQueue;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 
 /**
  * @author <a href="mailto:spider-warrior@liby.ltd">研发部-蜘蛛大侠</a>
@@ -17,28 +26,45 @@ import java.net.InetAddress;
  **/
 public class DomainNameServer {
 
-    private static final Logger logger = LoggerFactory.getLogger(DomainNameServer.class);
+    private static final ThreadGroup cpuIntensiveThreadGroup = new ThreadGroup(ThreadPoolConstants.CPU_INTENSIVE_THREAD_GROUP);
+    private static final ThreadPoolExecutor cpuIntensiveThreadPoolExecutor = new MonitoredThreadPool(
+            ThreadPoolConstants.CORE_POOL_SIZE,
+            ThreadPoolConstants.CORE_POOL_SIZE,
+            Long.MAX_VALUE,
+            TimeUnit.NANOSECONDS,
+            new ArrayBlockingQueue<>(20),
+            new MonitoredThreadFactory(ThreadPoolConstants.CPU_INTENSIVE_THREAD_GROUP, cpuIntensiveThreadGroup),
+            ThreadPoolConstants.CPU_INTENSIVE_THREAD_GROUP
+    );
+
+    private static final MessageHandler messageHandler = new MessageHandler();
 
     public static void main(String[] args) throws IOException {
+        startThreadPoolMonitor();
         loadSpecificDnsProperty();
-        MessageHandler messageHandler = new MessageHandler();
-        DatagramSocket socket = new DatagramSocket(53);
         final byte[] buffer = new byte[1024];
+        DatagramSocket socket = new DatagramSocket(53);
         while (true) {
             DatagramPacket packet = new DatagramPacket(buffer, buffer.length);
+            MessageContext messageContext = new MessageContext();
+            // trace [id]
+            messageContext.setTraceId(new Random().nextLong());
             socket.receive(packet);
-
+            //trace [receive time]
+            messageContext.setReceiveTime(System.currentTimeMillis());
             byte[] messageBytes = new byte[packet.getLength()];
             System.arraycopy(packet.getData(), 0, messageBytes, 0, packet.getLength());
-            MessageContext messageContext = new MessageContext();
-            messageContext.setSocket(socket);
-            messageContext.setInetAddress(packet.getAddress());
-            messageContext.setPort(packet.getPort());
-
-            InetAddress inetAddress = packet.getAddress();
-            int port = packet.getPort();
-            logger.info("message from: sourceIpAddr: {}:{}", inetAddress, port);
-            messageHandler.handle(messageBytes, messageContext);
+            cpuIntensiveThreadPoolExecutor.submit(() -> {
+                //trace [cpu thread start time]
+                messageContext.setCpuIntensiveThreadStartTime(System.currentTimeMillis());
+                messageContext.setServerSocket(socket);
+                messageContext.setRemoteInetAddress(packet.getAddress());
+                messageContext.setRemotePort(packet.getPort());
+                Request request = MessageCodecUtil.decodeRequest(messageBytes);
+                messageHandler.handle(request, messageContext);
+                //trace [cpu thread end time]
+                messageContext.setCpuIntensiveThreadEndTime(System.currentTimeMillis());
+            });
         }
     }
     private static void loadSpecificDnsProperty() {
@@ -47,5 +73,15 @@ public class DomainNameServer {
         //dns,sun的时候，会调用sun.net.spi.nameservice.nameservers=<server1_ipaddr,server2_ipaddr ...>指定的DNS来解析
         System.setProperty("sun.net.spi.nameservice.provider.1", "dns,sun");
         System.setProperty("sun.net.spi.nameservice.nameservers", "192.168.1.1");
+    }
+
+    private static void startThreadPoolMonitor() {
+        ThreadPoolMonitor threadPoolMonitor = new ThreadPoolMonitor(ThreadPoolConstants.CPU_INTENSIVE_THREAD_GROUP, cpuIntensiveThreadPoolExecutor);
+        new Timer().schedule(new TimerTask() {
+            @Override
+            public void run() {
+                threadPoolMonitor.run();
+            }
+        }, 3000, 1000);
     }
 }

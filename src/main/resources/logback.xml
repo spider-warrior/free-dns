@@ -20,6 +20,38 @@
             <charset>UTF-8</charset>
         </encoder>
     </appender>
+    <appender name="ThreadMonitor" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <File>${logHome}/thread-monitor.log</File>
+        <rollingPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
+            <FileNamePattern>${logHome}/thread-monitor.%d{yyyy-MM-dd}.%i.log</FileNamePattern>
+            <!-- keep 10 days worth of history -->
+            <maxFileSize>10MB</maxFileSize>
+            <maxHistory>10</maxHistory>
+        </rollingPolicy>
+        <encoder>
+            <pattern>${pattern}</pattern>
+            <charset>UTF-8</charset>
+        </encoder>
+    </appender>
+    <appender name="ThreadPoolMonitor" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <File>${logHome}/thread-pool-monitor.log</File>
+        <rollingPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
+            <FileNamePattern>${logHome}/thread-pool-monitor.%d{yyyy-MM-dd}.%i.log</FileNamePattern>
+            <!-- keep 10 days worth of history -->
+            <maxFileSize>10MB</maxFileSize>
+            <maxHistory>10</maxHistory>
+        </rollingPolicy>
+        <encoder>
+            <pattern>${pattern}</pattern>
+            <charset>UTF-8</charset>
+        </encoder>
+    </appender>
+    <logger name="ThreadMonitor" level="INFO" additivity="false">
+        <appender-ref ref="ThreadMonitor"/>
+    </logger>
+    <logger name="ThreadPoolMonitor" level="INFO" additivity="false">
+        <appender-ref ref="ThreadPoolMonitor"/>
+    </logger>
     <root level="INFO">
         <appender-ref ref="Console"/>
         <appender-ref ref="Default"/>

@@ -5,13 +5,16 @@ import cn.t.freedns.core.data.*;
 import cn.t.freedns.core.queryhandler.IpV4DomainQueryHandler;
 import cn.t.freedns.core.queryhandler.IpV6DomainQueryHandler;
 import cn.t.freedns.core.queryhandler.QueryHandler;
-import cn.t.freedns.util.MessageFlagUtil;
 import cn.t.freedns.util.MessageCodecUtil;
+import cn.t.freedns.util.MessageFlagUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
+import java.util.concurrent.ConcurrentSkipListSet;
 
 /**
  * @author yj
@@ -21,8 +24,17 @@ public class RequestHandler {
 
     private static final Logger logger = LoggerFactory.getLogger(RequestHandler.class);
 
+    private final Set<Short> transactionIdSet = new ConcurrentSkipListSet<>();
+
     private final List<QueryHandler> queryHandlerList = new ArrayList<>();
     public void handle(MessageContext messageContext, Request request) {
+        //trace [io thread start time]
+        messageContext.setIoIntensiveThreadStartTime(System.currentTimeMillis());
+        Head requestHead = request.getHead();
+        boolean success = transactionIdSet.add(requestHead.getTransID());
+        if(!success) {
+            return;
+        }
         List<Query> queryList = request.getQueryList();
         List<Record> recordList = new ArrayList<>(queryList.size());
         for (Query query : queryList) {
@@ -37,11 +49,18 @@ public class RequestHandler {
             }
         }
         Response response = new Response();
-        Head head = responseHeader(request, recordList);
-        response.setHead(head);
+        Head responseHead = responseHeader(request, recordList);
+        response.setHead(responseHead);
         response.setQueryList(queryList);
         response.setRecordList(recordList);
-        messageContext.write(MessageCodecUtil.encodeResponse(response));
+        try {
+            messageContext.write(MessageCodecUtil.encodeResponse(response));
+        } catch (IOException e) {
+            logger.error("响应客户端失败", e);
+        }
+        //trace [io thread end time]
+        messageContext.setIoIntensiveThreadEndTime(System.currentTimeMillis());
+        System.out.println(messageContext.getMessageLifeStyleTrace().debugDuration());
     }
     private QueryHandler selectMessageHandler(Query query) {
         for(QueryHandler queryHandler : queryHandlerList) {

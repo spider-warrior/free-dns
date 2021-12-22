@@ -11,44 +11,69 @@ import java.net.InetAddress;
  * @since 2021-12-17 15:28
  **/
 public class MessageContext {
-    private DatagramSocket socket;
-    private InetAddress inetAddress;
-    private int port;
+    private final MessageLifeStyleTrace messageLifeStyleTrace = new MessageLifeStyleTrace();
 
-    public void write(byte[] data) {
+    private DatagramSocket serverSocket;
+    private InetAddress remoteInetAddress;
+    private int remotePort;
+
+    public void write(byte[] data) throws IOException {
         if(data != null && data.length > 0) {
-            DatagramPacket packet = new DatagramPacket(data, data.length);
-            packet.setAddress(inetAddress);
-            packet.setPort(port);
-            try {
-                socket.send(packet);
-            } catch (IOException e) {
-                throw new RuntimeException(e);
-            }
+            serverSocket.send(new DatagramPacket(data, data.length, remoteInetAddress, remotePort));
         }
     }
 
-    public DatagramSocket getSocket() {
-        return socket;
+    public DatagramSocket getServerSocket() {
+        return serverSocket;
     }
 
-    public void setSocket(DatagramSocket socket) {
-        this.socket = socket;
+    public void setServerSocket(DatagramSocket serverSocket) {
+        this.serverSocket = serverSocket;
     }
 
-    public InetAddress getInetAddress() {
-        return inetAddress;
+    public InetAddress getRemoteInetAddress() {
+        return remoteInetAddress;
     }
 
-    public void setInetAddress(InetAddress inetAddress) {
-        this.inetAddress = inetAddress;
+    public void setRemoteInetAddress(InetAddress remoteInetAddress) {
+        this.remoteInetAddress = remoteInetAddress;
     }
 
-    public int getPort() {
-        return port;
+    public int getRemotePort() {
+        return remotePort;
     }
 
-    public void setPort(int port) {
-        this.port = port;
+    public void setRemotePort(int remotePort) {
+        this.remotePort = remotePort;
     }
+
+    public MessageLifeStyleTrace getMessageLifeStyleTrace() {
+        return messageLifeStyleTrace;
+    }
+
+    /* 静态代理方法 */
+    public void setTraceId(long traceId) {
+        this.messageLifeStyleTrace.setTraceId(traceId);
+    }
+
+    public void setReceiveTime(long receiveTime) {
+        this.messageLifeStyleTrace.setReceiveTime(receiveTime);
+    }
+
+    public void setCpuIntensiveThreadStartTime(long cpuIntensiveThreadStartTime) {
+        this.messageLifeStyleTrace.setCpuIntensiveThreadStartTime(cpuIntensiveThreadStartTime);
+    }
+
+    public void setCpuIntensiveThreadEndTime(long cpuIntensiveThreadEndTime) {
+        this.messageLifeStyleTrace.setCpuIntensiveThreadEndTime(cpuIntensiveThreadEndTime);
+    }
+
+    public void setIoIntensiveThreadStartTime(long ioIntensiveThreadStartTime) {
+        this.messageLifeStyleTrace.setIoIntensiveThreadStartTime(ioIntensiveThreadStartTime);
+    }
+
+    public void setIoIntensiveThreadEndTime(long iouIntensiveThreadEndTime) {
+        this.messageLifeStyleTrace.setIoIntensiveThreadEndTime(iouIntensiveThreadEndTime);
+    }
+    /* ************************************************************************************* */
 }
