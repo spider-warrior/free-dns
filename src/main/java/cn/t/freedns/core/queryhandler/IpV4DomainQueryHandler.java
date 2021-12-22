@@ -41,43 +41,41 @@ public class IpV4DomainQueryHandler implements QueryHandler {
 
     @Override
     public List<Record> handle(Query query, MessageContext messageContext, RequestProcessTracer requestProcessTracer) {
-        //trace [io thread local config search start time]
-        requestProcessTracer.setIoIntensiveThreadLocalConfigSearchStartTime(System.currentTimeMillis());
-        List<Record> recordList = tryLocalConfigResourceRecords(query.getDomain());
-        if(CollectionUtil.isEmpty(recordList)) {
-            recordList = domainRecordListMap.get(query.getDomain());
+        List<Record> recordList = tryLocalConfigResourceRecords(query.getDomain(), requestProcessTracer);
+        if(!CollectionUtil.isEmpty(recordList)) {
+            return recordList;
         }
-        //trace [io thread local config search end time]
-        requestProcessTracer.setIoIntensiveThreadLocalConfigSearchEndTime(System.currentTimeMillis());
-        if(emptyList != recordList && CollectionUtil.isEmpty(recordList)) {
-            //trace [io thread local node search start time]
-            requestProcessTracer.setIoIntensiveThreadLocalNodeSearchStartTime(System.currentTimeMillis());
-            try {
-                recordList = tryLocalNodeResourceRecords(query.getDomain());
-                domainRecordListMap.put(query.getDomain(), recordList);
-                //trace [io thread local node search end time]
-                requestProcessTracer.setIoIntensiveThreadLocalNodeSearchEndTime(System.currentTimeMillis());
-            } catch (UnknownHostException e) {
-                long now = System.currentTimeMillis();
-                //trace [io thread local node search end time]
-                requestProcessTracer.setIoIntensiveThreadLocalNodeSearchEndTime(now);
-                //trace [io thread thirty party search start time]
-                requestProcessTracer.setIoIntensiveThreadThirtyPartySearchStartTime(now);
-                recordList = tryThirtyPartyNodeResourceRecords(query.getType(), query.getClazz(), query.getDomain());
-                if(CollectionUtil.isEmpty(recordList)) {
-                    domainRecordListMap.put(query.getDomain(), emptyList);
-                } else {
-                    domainRecordListMap.put(query.getDomain(), recordList);
-                }
-                //trace [io thread thirty party search end time]
-                requestProcessTracer.setIoIntensiveThreadThirtyPartySearchEndTime(System.currentTimeMillis());
-            }
+        recordList = domainRecordListMap.get(query.getDomain());
+        if(recordList == emptyList) {
+            return recordList;
+        }
+        recordList = tryLocalNodeResourceRecords(query.getDomain(), requestProcessTracer);
+        if(!CollectionUtil.isEmpty(recordList)) {
+            domainRecordListMap.put(query.getDomain(), recordList);
+            return recordList;
+        }
+        recordList = tryThirtyPartyNodeResourceRecords(query.getType(), query.getClazz(), query.getDomain(), requestProcessTracer);
+        if(CollectionUtil.isEmpty(recordList)) {
+            domainRecordListMap.put(query.getDomain(), emptyList);
+        } else {
+            domainRecordListMap.put(query.getDomain(), recordList);
         }
         return recordList;
     }
 
+    private List<Record> tryLocalConfigResourceRecords(String domain, RequestProcessTracer requestProcessTracer) {
+        //trace [io thread local config search start time]
+        requestProcessTracer.setIoIntensiveThreadLocalConfigSearchStartTime(System.currentTimeMillis());
+        try {
+            return doTryLocalConfigResourceRecords(domain);
+        } finally {
+            //trace [io thread local config search end time]
+            requestProcessTracer.setIoIntensiveThreadLocalConfigSearchEndTime(System.currentTimeMillis());
+        }
+    }
+
     //本地配置
-    private List<Record> tryLocalConfigResourceRecords(String domain) {
+    private List<Record> doTryLocalConfigResourceRecords(String domain) {
         String ip = ipMappingRepository.getIpv4ByDomainName(domain);
         if(ip == null) {
             return Collections.emptyList();
@@ -97,26 +95,52 @@ public class IpV4DomainQueryHandler implements QueryHandler {
         return Collections.singletonList(record);
     }
 
+    private List<Record> tryLocalNodeResourceRecords(String domain, RequestProcessTracer requestProcessTracer) {
+        //trace [io thread local node search start time]
+        requestProcessTracer.setIoIntensiveThreadLocalNodeSearchStartTime(System.currentTimeMillis());
+        try {
+            return doTryLocalNodeResourceRecords(domain);
+        } finally {
+            //trace [io thread local node search end time]
+            requestProcessTracer.setIoIntensiveThreadLocalNodeSearchEndTime(System.currentTimeMillis());
+        }
+    }
+
     //本地主机解析器
-    private List<Record> tryLocalNodeResourceRecords(String domain) throws UnknownHostException {
-        InetAddress address = InetAddress.getByName(domain);
-        logger.info("domain: {} resolved by local resolver, address: {}", domain, address);
-        if(address instanceof Inet4Address) {
-            Record record = new Record();
-            record.setDomain(domain);
-            Inet4Address inet4Address = (Inet4Address)address;
-            record.setRecordType(RecordType.A.value);
-            record.setRecordClass(RecordClass.IN.value);
-            record.setTtl(600);
-            record.setData(inet4Address.getAddress());
-            return Collections.singletonList(record);
-        } else {
-            throw new ForbidServiceException("不支持的地址类型");
+    private List<Record> doTryLocalNodeResourceRecords(String domain) {
+        try {
+            InetAddress address = InetAddress.getByName(domain);
+            logger.info("domain: {} resolved by local resolver, address: {}", domain, address);
+            if(address instanceof Inet4Address) {
+                Record record = new Record();
+                record.setDomain(domain);
+                Inet4Address inet4Address = (Inet4Address)address;
+                record.setRecordType(RecordType.A.value);
+                record.setRecordClass(RecordClass.IN.value);
+                record.setTtl(600);
+                record.setData(inet4Address.getAddress());
+                return Collections.singletonList(record);
+            } else {
+                throw new ForbidServiceException("不支持的地址类型");
+            }
+        } catch (UnknownHostException ignore) {
+            return Collections.emptyList();
+        }
+    }
+
+    private List<Record> tryThirtyPartyNodeResourceRecords(short type, short clazz, String domain, RequestProcessTracer requestProcessTracer) {
+        //trace [io thread thirty party search start time]
+        requestProcessTracer.setIoIntensiveThreadThirtyPartySearchStartTime(System.currentTimeMillis());
+        try {
+            return doTryThirtyPartyNodeResourceRecords(type, clazz, domain);
+        } finally {
+            //trace [io thread thirty party search end time]
+            requestProcessTracer.setIoIntensiveThreadThirtyPartySearchEndTime(System.currentTimeMillis());
         }
     }
 
     //三方解析器
-    private List<Record> tryThirtyPartyNodeResourceRecords(short type, short clazz, String domain) {
+    private List<Record> doTryThirtyPartyNodeResourceRecords(short type, short clazz, String domain) {
         logger.info("domain: {} cannot be resolved by local resolver, use 114.114.114.114", domain);
         try {
             Head head = new Head();
