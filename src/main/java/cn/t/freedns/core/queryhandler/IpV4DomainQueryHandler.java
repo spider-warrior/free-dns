@@ -17,7 +17,10 @@ import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.net.*;
-import java.util.*;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
  * @author yj
@@ -26,7 +29,6 @@ import java.util.*;
 public class IpV4DomainQueryHandler implements QueryHandler {
 
     private static final Logger logger = LoggerFactory.getLogger(IpV4DomainQueryHandler.class);
-    private static final List<Record> emptyList = new ArrayList<>(0);
 
     private final IpMappingRepository ipMappingRepository = new MemoryIpMappingRepositoryImpl();
     private final Map<String, List<Record>> domainRecordListMap = new HashMap<>();
@@ -46,20 +48,16 @@ public class IpV4DomainQueryHandler implements QueryHandler {
             return recordList;
         }
         recordList = domainRecordListMap.get(query.getDomain());
-        if(recordList == emptyList) {
+        if(recordList != null) {
             return recordList;
         }
-        recordList = tryLocalNodeResourceRecords(query.getDomain(), requestProcessTracer);
-        if(!CollectionUtil.isEmpty(recordList)) {
-            domainRecordListMap.put(query.getDomain(), recordList);
-            return recordList;
-        }
+//        recordList = tryLocalNodeResourceRecords(query.getDomain(), requestProcessTracer);
+//        if(!CollectionUtil.isEmpty(recordList)) {
+//            domainRecordListMap.put(query.getDomain(), recordList);
+//            return recordList;
+//        }
         recordList = tryThirtyPartyNodeResourceRecords(query.getType(), query.getClazz(), query.getDomain(), requestProcessTracer);
-        if(CollectionUtil.isEmpty(recordList)) {
-            domainRecordListMap.put(query.getDomain(), emptyList);
-        } else {
-            domainRecordListMap.put(query.getDomain(), recordList);
-        }
+        domainRecordListMap.put(query.getDomain(), recordList);
         return recordList;
     }
 
