@@ -9,6 +9,7 @@ import cn.t.freedns.core.constants.RecordType;
 import cn.t.freedns.core.data.*;
 import cn.t.freedns.repository.IpMappingRepository;
 import cn.t.freedns.repository.MemoryIpMappingRepositoryImpl;
+import cn.t.freedns.util.CollectionUtil;
 import cn.t.freedns.util.MessageCodecUtil;
 import cn.t.freedns.util.MessageFlagUtil;
 import org.slf4j.Logger;
@@ -16,8 +17,7 @@ import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.net.*;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
 
 /**
  * @author yj
@@ -26,8 +26,10 @@ import java.util.List;
 public class IpV4DomainQueryHandler implements QueryHandler {
 
     private static final Logger logger = LoggerFactory.getLogger(IpV4DomainQueryHandler.class);
+    private static final List<Record> emptyList = new ArrayList<>(0);
 
     private final IpMappingRepository ipMappingRepository = new MemoryIpMappingRepositoryImpl();
+    private final Map<String, List<Record>> domainRecordListMap = new HashMap<>();
 
     @Override
     public boolean support(Query query) {
@@ -42,13 +44,17 @@ public class IpV4DomainQueryHandler implements QueryHandler {
         //trace [io thread local config search start time]
         requestProcessTracer.setIoIntensiveThreadLocalConfigSearchStartTime(System.currentTimeMillis());
         List<Record> recordList = tryLocalConfigResourceRecords(query.getDomain());
+        if(CollectionUtil.isEmpty(recordList)) {
+            recordList = domainRecordListMap.get(query.getDomain());
+        }
         //trace [io thread local config search end time]
         requestProcessTracer.setIoIntensiveThreadLocalConfigSearchEndTime(System.currentTimeMillis());
-        if(recordList.isEmpty()) {
+        if(emptyList != recordList && CollectionUtil.isEmpty(recordList)) {
+            //trace [io thread local node search start time]
+            requestProcessTracer.setIoIntensiveThreadLocalNodeSearchStartTime(System.currentTimeMillis());
             try {
-                //trace [io thread local node search start time]
-                requestProcessTracer.setIoIntensiveThreadLocalNodeSearchStartTime(System.currentTimeMillis());
                 recordList = tryLocalNodeResourceRecords(query.getDomain());
+                domainRecordListMap.put(query.getDomain(), recordList);
                 //trace [io thread local node search end time]
                 requestProcessTracer.setIoIntensiveThreadLocalNodeSearchEndTime(System.currentTimeMillis());
             } catch (UnknownHostException e) {
@@ -58,6 +64,11 @@ public class IpV4DomainQueryHandler implements QueryHandler {
                 //trace [io thread thirty party search start time]
                 requestProcessTracer.setIoIntensiveThreadThirtyPartySearchStartTime(now);
                 recordList = tryThirtyPartyNodeResourceRecords(query.getType(), query.getClazz(), query.getDomain());
+                if(CollectionUtil.isEmpty(recordList)) {
+                    domainRecordListMap.put(query.getDomain(), emptyList);
+                } else {
+                    domainRecordListMap.put(query.getDomain(), recordList);
+                }
                 //trace [io thread thirty party search end time]
                 requestProcessTracer.setIoIntensiveThreadThirtyPartySearchEndTime(System.currentTimeMillis());
             }
