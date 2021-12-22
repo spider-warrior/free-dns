@@ -53,7 +53,7 @@ public class RequestHandler {
         }
         //trace [io thread end time]
         messageContext.setIoIntensiveThreadEndTime(System.currentTimeMillis());
-        System.out.println(messageContext.getMessageLifeStyleTrace().debugDuration());
+        System.out.println(messageContext.getRequestProcessTracer().debugDuration());
     }
     private QueryHandler selectMessageHandler(Query query) {
         for(QueryHandler queryHandler : queryHandlerList) {

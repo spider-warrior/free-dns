@@ -11,7 +11,7 @@ import java.net.InetAddress;
  * @since 2021-12-17 15:28
  **/
 public class MessageContext {
-    private final MessageLifeStyleTrace messageLifeStyleTrace = new MessageLifeStyleTrace();
+    private final RequestProcessTracer requestProcessTracer = new RequestProcessTracer();
 
     private DatagramSocket serverSocket;
     private InetAddress remoteInetAddress;
@@ -47,61 +47,61 @@ public class MessageContext {
         this.remotePort = remotePort;
     }
 
-    public MessageLifeStyleTrace getMessageLifeStyleTrace() {
-        return messageLifeStyleTrace;
+    public RequestProcessTracer getRequestProcessTracer() {
+        return requestProcessTracer;
     }
 
     /* 静态代理方法 */
     public void setTraceId(long traceId) {
-        this.messageLifeStyleTrace.setTraceId(traceId);
+        this.requestProcessTracer.setTraceId(traceId);
     }
 
     public void addDomain(String domain) {
-        this.messageLifeStyleTrace.addDomain(domain);
+        this.requestProcessTracer.addDomain(domain);
     }
 
     public void setReceiveTime(long receiveTime) {
-        this.messageLifeStyleTrace.setReceiveTime(receiveTime);
+        this.requestProcessTracer.setReceiveTime(receiveTime);
     }
 
     public void setCpuIntensiveThreadStartTime(long cpuIntensiveThreadStartTime) {
-        this.messageLifeStyleTrace.setCpuIntensiveThreadStartTime(cpuIntensiveThreadStartTime);
+        this.requestProcessTracer.setCpuIntensiveThreadStartTime(cpuIntensiveThreadStartTime);
     }
 
     public void setCpuIntensiveThreadEndTime(long cpuIntensiveThreadEndTime) {
-        this.messageLifeStyleTrace.setCpuIntensiveThreadEndTime(cpuIntensiveThreadEndTime);
+        this.requestProcessTracer.setCpuIntensiveThreadEndTime(cpuIntensiveThreadEndTime);
     }
 
     public void setIoIntensiveThreadStartTime(long ioIntensiveThreadStartTime) {
-        this.messageLifeStyleTrace.setIoIntensiveThreadStartTime(ioIntensiveThreadStartTime);
+        this.requestProcessTracer.setIoIntensiveThreadStartTime(ioIntensiveThreadStartTime);
     }
 
     public void setIoIntensiveThreadEndTime(long iouIntensiveThreadEndTime) {
-        this.messageLifeStyleTrace.setIoIntensiveThreadEndTime(iouIntensiveThreadEndTime);
+        this.requestProcessTracer.setIoIntensiveThreadEndTime(iouIntensiveThreadEndTime);
     }
 
     public void setIoIntensiveThreadLocalConfigSearchStartTime(long ioIntensiveThreadLocalConfigSearchStartTime) {
-        this.messageLifeStyleTrace.setIoIntensiveThreadLocalConfigSearchStartTime(ioIntensiveThreadLocalConfigSearchStartTime);
+        this.requestProcessTracer.setIoIntensiveThreadLocalConfigSearchStartTime(ioIntensiveThreadLocalConfigSearchStartTime);
     }
 
     public void setIoIntensiveThreadLocalConfigSearchEndTime(long ioIntensiveThreadLocalConfigSearchEndTime) {
-        this.messageLifeStyleTrace.setIoIntensiveThreadLocalConfigSearchEndTime(ioIntensiveThreadLocalConfigSearchEndTime);
+        this.requestProcessTracer.setIoIntensiveThreadLocalConfigSearchEndTime(ioIntensiveThreadLocalConfigSearchEndTime);
     }
 
     public void setIoIntensiveThreadLocalNodeSearchStartTime(long ioIntensiveThreadLocalNodeSearchStartTime) {
-        this.messageLifeStyleTrace.setIoIntensiveThreadLocalNodeSearchStartTime(ioIntensiveThreadLocalNodeSearchStartTime);
+        this.requestProcessTracer.setIoIntensiveThreadLocalNodeSearchStartTime(ioIntensiveThreadLocalNodeSearchStartTime);
     }
 
     public void setIoIntensiveThreadLocalNodeSearchEndTime(long ioIntensiveThreadLocalNodeSearchEndTime) {
-        this.messageLifeStyleTrace.setIoIntensiveThreadLocalNodeSearchEndTime(ioIntensiveThreadLocalNodeSearchEndTime);
+        this.requestProcessTracer.setIoIntensiveThreadLocalNodeSearchEndTime(ioIntensiveThreadLocalNodeSearchEndTime);
     }
 
     public void setIoIntensiveThreadThirtyPartySearchStartTime(long ioIntensiveThreadThirtyPartySearchStartTime) {
-        this.messageLifeStyleTrace.setIoIntensiveThreadThirtyPartySearchStartTime(ioIntensiveThreadThirtyPartySearchStartTime);
+        this.requestProcessTracer.setIoIntensiveThreadThirtyPartySearchStartTime(ioIntensiveThreadThirtyPartySearchStartTime);
     }
 
     public void setIoIntensiveThreadThirtyPartySearchEndTime(long ioIntensiveThreadThirtyPartySearchEndTime) {
-        this.messageLifeStyleTrace.setIoIntensiveThreadThirtyPartySearchEndTime(ioIntensiveThreadThirtyPartySearchEndTime);
+        this.requestProcessTracer.setIoIntensiveThreadThirtyPartySearchEndTime(ioIntensiveThreadThirtyPartySearchEndTime);
     }
     /* ************************************************************************************* */
 }

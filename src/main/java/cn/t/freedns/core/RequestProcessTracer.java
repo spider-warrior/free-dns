@@ -10,7 +10,7 @@ import java.util.List;
  * @version V1.0
  * @since 2021-12-22 10:03
  **/
-public class MessageLifeStyleTrace {
+public class RequestProcessTracer {
 
     private long traceId;
     private final List<String> domainList = new ArrayList<>();

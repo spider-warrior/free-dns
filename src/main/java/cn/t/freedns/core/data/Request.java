@@ -1,9 +1,6 @@
 package cn.t.freedns.core.data;
 
 
-import cn.t.freedns.core.data.Head;
-import cn.t.freedns.core.data.Query;
-
 import java.util.List;
 
 /**
