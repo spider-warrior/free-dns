@@ -9,5 +9,5 @@ import java.util.List;
 
 public interface QueryHandler {
     boolean support(Query query);
-    List<Record> handler(Query query, MessageContext messageContext, RequestProcessTracer requestProcessTracer);
+    List<Record> handle(Query query, MessageContext messageContext, RequestProcessTracer requestProcessTracer);
 }

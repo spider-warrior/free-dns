@@ -38,7 +38,7 @@ public class IpV4DomainQueryHandler implements QueryHandler {
     }
 
     @Override
-    public List<Record> handler(Query query, MessageContext messageContext, RequestProcessTracer requestProcessTracer) {
+    public List<Record> handle(Query query, MessageContext messageContext, RequestProcessTracer requestProcessTracer) {
         //trace [io thread local config search start time]
         requestProcessTracer.setIoIntensiveThreadLocalConfigSearchStartTime(System.currentTimeMillis());
         List<Record> recordList = tryLocalConfigResourceRecords(query.getDomain());

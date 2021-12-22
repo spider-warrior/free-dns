@@ -33,7 +33,7 @@ public class RequestHandler {
             if(queryHandler != null) {
                 //trace [domain]
                 requestProcessTracer.addDomain(query.getDomain());
-                List<Record> partRecordList = queryHandler.handler(query, messageContext, requestProcessTracer);
+                List<Record> partRecordList = queryHandler.handle(query, messageContext, requestProcessTracer);
                 if(partRecordList != null) {
                     recordList.addAll(partRecordList);
                 }

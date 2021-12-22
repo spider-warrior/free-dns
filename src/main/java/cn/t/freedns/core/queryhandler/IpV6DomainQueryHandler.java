@@ -28,7 +28,7 @@ public class IpV6DomainQueryHandler implements QueryHandler {
     }
 
     @Override
-    public List<Record> handler(Query query, MessageContext messageContext, RequestProcessTracer requestProcessTracer) {
+    public List<Record> handle(Query query, MessageContext messageContext, RequestProcessTracer requestProcessTracer) {
         return Collections.emptyList();
     }
 }
