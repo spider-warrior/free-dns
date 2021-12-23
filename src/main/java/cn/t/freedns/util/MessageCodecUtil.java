@@ -2,12 +2,8 @@ package cn.t.freedns.util;
 
 
 import cn.t.freedns.ForbidServiceException;
-import cn.t.freedns.core.data.Head;
-import cn.t.freedns.core.data.Record;
 import cn.t.freedns.core.constants.RecordType;
-import cn.t.freedns.core.data.Query;
-import cn.t.freedns.core.data.Request;
-import cn.t.freedns.core.data.Response;
+import cn.t.freedns.core.data.*;
 
 import java.nio.ByteBuffer;
 import java.util.*;
@@ -208,22 +204,7 @@ public class MessageCodecUtil {
         } else {
             List<Record> recordList = new ArrayList<>();
             while (answerCount-- > 0) {
-                String domain;
-                //因为域名字符的限制(最大为63)所以byte字节的高两位始终为00，所以使用高两位使用11表示使用偏移量来表示对应的域名,10和01两种状态被保留
-                //前面内容都是定长，所以偏移量一定是从12开始算起
-                int length = messageBuffer.get();
-                if(length == (byte)0xC0) {
-                    int offset = messageBuffer.get();
-                    if(offset < 0) {
-                        offset &= 0b11111111;
-                    }
-                    int index = messageBuffer.position();
-                    messageBuffer.position(offset);
-                    domain = decodeDomain(messageBuffer);
-                    messageBuffer.position(index);
-                } else {
-                    domain = decodeDomain(messageBuffer);
-                }
+                String domain = decodeDomain(messageBuffer);
                 Record record = new Record();
                 record.setDomain(domain);
                 record.setRecordType(messageBuffer.getShort());
@@ -247,7 +228,12 @@ public class MessageCodecUtil {
             if(length == 0) {
                 break;
             } else if(length == (byte)0xC0) {
+                //因为域名字符的限制(最大为63)所以byte字节的高两位始终为00，所以使用高两位使用11表示使用偏移量来表示对应的域名,10和01两种状态被保留
+                //前面内容都是定长，所以偏移量一定是从12开始算起
                 int offset = messageBuffer.get();
+                if(offset < 0) {
+                    offset &= 0b11111111;
+                }
                 int position = messageBuffer.position();
                 messageBuffer.position(offset);
                 builder.append(decodeDomain(messageBuffer));
