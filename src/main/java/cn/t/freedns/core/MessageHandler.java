@@ -43,19 +43,24 @@ public class MessageHandler {
     private final RequestHandler requestHandler = new RequestHandler();
 
     public void handle(Request request, MessageContext context, RequestProcessTracer requestProcessTracer) {
-        ioIntensiveThreadPoolExecutor.submit(() -> {
-            String uniqueRequestId = uniqueRequestId(context.getRemoteInetAddress(), context.getRemotePort(), request.getHead().getTransID());
-            boolean success = uniqueRequestIdSet.add(uniqueRequestId);
-            if(success) {
-                try {
-                    requestHandler.handle(request, context, requestProcessTracer);
-                } finally {
-                    uniqueRequestIdSet.remove(uniqueRequestId);
-                }
-            } else {
-                logger.info("拦截请求, remoteInetAddress: {}, remotePort: {}, transId: {}", context.getRemoteInetAddress(), context.getRemotePort(), request.getHead().getTransID());
+        String uniqueRequestId = uniqueRequestId(context.getRemoteInetAddress(), context.getRemotePort(), request.getHead().getTransID());
+        boolean success = uniqueRequestIdSet.add(uniqueRequestId);
+        if(success) {
+            try {
+                ioIntensiveThreadPoolExecutor.submit(() -> {
+                    try {
+                        requestHandler.handle(request, context, requestProcessTracer);
+                    } finally {
+                        uniqueRequestIdSet.remove(uniqueRequestId);
+                    }
+                });
+            } catch (Exception e) {
+                uniqueRequestIdSet.remove(uniqueRequestId);
+                logger.error("io任务提交失败", e);
             }
-        });
+        } else {
+            logger.info("拦截请求, remoteInetAddress: {}, remotePort: {}, transId: {}", context.getRemoteInetAddress(), context.getRemotePort(), request.getHead().getTransID());
+        }
     }
 
     private String uniqueRequestId(InetAddress remoteInetAddress, int remotePort, short transId) {
