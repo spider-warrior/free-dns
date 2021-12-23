@@ -6,7 +6,7 @@ import java.util.List;
 /**
  * MessageLifeStyleTrace
  *
- * @author <a href="mailto:yangjian@ifenxi.com">研发部-杨建</a>
+ * @author <a href="mailto:yangjian@liby.ltd">研发部-杨建</a>
  * @version V1.0
  * @since 2021-12-22 10:03
  **/
