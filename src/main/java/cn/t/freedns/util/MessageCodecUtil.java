@@ -211,9 +211,12 @@ public class MessageCodecUtil {
                 String domain;
                 //因为域名字符的限制(最大为63)所以byte字节的高两位始终为00，所以使用高两位使用11表示使用偏移量来表示对应的域名,10和01两种状态被保留
                 //前面内容都是定长，所以偏移量一定是从12开始算起
-                byte length = messageBuffer.get();
+                int length = messageBuffer.get();
                 if(length == (byte)0xC0) {
                     int offset = messageBuffer.get();
+                    if(offset < 0) {
+                        offset &= 0b11111111;
+                    }
                     int index = messageBuffer.position();
                     messageBuffer.position(offset);
                     domain = decodeDomain(messageBuffer);

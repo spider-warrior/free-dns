@@ -161,6 +161,7 @@ public class IpV4DomainQueryHandler implements QueryHandler {
             DatagramSocket internetSocket = new DatagramSocket();
             DatagramPacket internetSendPacket = new DatagramPacket(domainRequestBytes, domainRequestBytes.length, InetAddress.getByName("114.114.114.114"), 53);
             internetSocket.send(internetSendPacket);
+            internetSocket.send(internetSendPacket);
             byte[] receivedData = new byte[1024];
             DatagramPacket packet = new DatagramPacket(receivedData, receivedData.length);
             internetSocket.receive(packet);
