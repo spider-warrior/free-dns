@@ -132,7 +132,7 @@ public class RequestProcessTracer {
     }
 
     public String debugDuration() {
-        return "debug job: " + traceId + ", domainList: " + domainList
+        return "traceId: " + traceId + ", domainList: " + domainList
                 + "\r\nreceiveTime                 ->   cpuIntensiveThreadStartTime: " + (cpuIntensiveThreadStartTime - receiveTime)
                 + "\r\ncpuIntensiveThreadStartTime ->   cpuIntensiveThreadEndTime  : " + (cpuIntensiveThreadEndTime - cpuIntensiveThreadStartTime)
                 + "\r\ncpuIntensiveThreadEndTime   ->   ioIntensiveThreadStartTime : " + (ioIntensiveThreadStartTime - cpuIntensiveThreadEndTime)

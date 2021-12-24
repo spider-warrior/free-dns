@@ -60,7 +60,7 @@ public class MessageHandler {
                     }
                     //trace [io thread end time]
                     requestProcessTracer.setIoIntensiveThreadEndTime(System.currentTimeMillis());
-                    logger.info("请求耗时:\r\n{}", requestProcessTracer.debugDuration());
+                    logger.info("请求耗时: {}", requestProcessTracer.debugDuration());
                 });
             } catch (Exception e) {
                 uniqueRequestIdSet.remove(uniqueRequestId);
