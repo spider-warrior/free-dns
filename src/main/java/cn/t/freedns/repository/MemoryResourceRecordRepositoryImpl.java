@@ -33,24 +33,28 @@ public class MemoryResourceRecordRepositoryImpl implements ResourceRecordReposit
         Properties properties = tryIpv4DomainMappingConfiguration();
         Set<String> domainSet = properties.stringPropertyNames();
         for (String domain : domainSet) {
-            String ip = properties.getProperty(domain);
-            if(ip == null || ip.trim().length() == 0) {
+            String ipv4 = properties.getProperty(domain);
+            if(ipv4 == null || ipv4.trim().length() == 0) {
                 domainRecordListMap.put(domain, Collections.emptyList());
             } else {
-                String[] ipElements = ip.split("\\.");
-                byte[] ipBytes = new byte[ipElements.length];
-                for (int i = 0; i < ipElements.length; i++) {
-                    ipBytes[i] = (byte)Short.parseShort(ipElements[i]);
-                }
                 Record record = new Record();
                 record.setDomain(domain);
                 record.setRecordType(RecordType.A.value);
                 record.setRecordClass(RecordClass.IN.value);
                 record.setTtl(600);
-                record.setData(ipBytes);
+                record.setData(convertIpv4ToBytes(ipv4));
                 domainRecordListMap.put(domain, Collections.singletonList(record));
             }
         }
+    }
+
+    private byte[] convertIpv4ToBytes(String ipv4) {
+        String[] ipElements = ipv4.split("\\.");
+        byte[] ipBytes = new byte[ipElements.length];
+        for (int i = 0; i < ipElements.length; i++) {
+            ipBytes[i] = (byte)Short.parseShort(ipElements[i]);
+        }
+        return ipBytes;
     }
 
     private static Properties tryIpv4DomainMappingConfiguration() {
