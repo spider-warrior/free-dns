@@ -5,6 +5,7 @@ import cn.t.freedns.threadpool.MonitoredThreadFactory;
 import cn.t.freedns.threadpool.MonitoredThreadPool;
 import cn.t.freedns.threadpool.ThreadPoolConstants;
 import cn.t.freedns.threadpool.ThreadPoolMonitor;
+import cn.t.freedns.util.MessageCodecUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -48,11 +49,18 @@ public class MessageHandler {
         if(success) {
             try {
                 ioIntensiveThreadPoolExecutor.submit(() -> {
+                    //trace [io thread start time]
+                    requestProcessTracer.setIoIntensiveThreadStartTime(System.currentTimeMillis());
                     try {
-                        requestHandler.handle(request, context, requestProcessTracer);
+                        context.write(MessageCodecUtil.encodeResponse(requestHandler.handle(request, context, requestProcessTracer)));
+                    } catch (Exception e) {
+                        logger.error("响应客户端失败", e);
                     } finally {
                         uniqueRequestIdSet.remove(uniqueRequestId);
                     }
+                    //trace [io thread end time]
+                    requestProcessTracer.setIoIntensiveThreadEndTime(System.currentTimeMillis());
+                    logger.info("请求耗时:\r\n{}", requestProcessTracer.debugDuration());
                 });
             } catch (Exception e) {
                 uniqueRequestIdSet.remove(uniqueRequestId);

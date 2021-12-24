@@ -1,18 +1,15 @@
 package cn.t.freedns.core;
 
 
+import cn.t.freedns.ForbidServiceException;
 import cn.t.freedns.core.constants.RecordClass;
 import cn.t.freedns.core.constants.RecordType;
 import cn.t.freedns.core.data.*;
 import cn.t.freedns.core.queryhandler.IpV4DomainQueryHandler;
 import cn.t.freedns.core.queryhandler.IpV6DomainQueryHandler;
 import cn.t.freedns.core.queryhandler.QueryHandler;
-import cn.t.freedns.util.MessageCodecUtil;
 import cn.t.freedns.util.MessageFlagUtil;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -22,12 +19,8 @@ import java.util.List;
  **/
 public class RequestHandler {
 
-    private static final Logger logger = LoggerFactory.getLogger(RequestHandler.class);
-
     private final List<QueryHandler> queryHandlerList = new ArrayList<>();
-    public void handle(Request request, MessageContext messageContext, RequestProcessTracer requestProcessTracer) {
-        //trace [io thread start time]
-        requestProcessTracer.setIoIntensiveThreadStartTime(System.currentTimeMillis());
+    public Response handle(Request request, MessageContext messageContext, RequestProcessTracer requestProcessTracer) {
         List<Query> queryList = request.getQueryList();
         List<Record> recordList = new ArrayList<>(queryList.size());
         for (Query query : queryList) {
@@ -40,7 +33,7 @@ public class RequestHandler {
                     recordList.addAll(partRecordList);
                 }
             } else {
-                logger.error("未能处理的消息: {}", request);
+                throw new ForbidServiceException("不能处理的请求类型");
             }
         }
         Response response = new Response();
@@ -48,14 +41,7 @@ public class RequestHandler {
         response.setHead(responseHead);
         response.setQueryList(queryList);
         response.setRecordList(recordList);
-        try {
-            messageContext.write(MessageCodecUtil.encodeResponse(response));
-        } catch (IOException e) {
-            logger.error("响应客户端失败", e);
-        }
-        //trace [io thread end time]
-        requestProcessTracer.setIoIntensiveThreadEndTime(System.currentTimeMillis());
-        System.out.println(requestProcessTracer.debugDuration());
+        return response;
     }
     private QueryHandler selectMessageHandler(Query query) {
         for(QueryHandler queryHandler : queryHandlerList) {
