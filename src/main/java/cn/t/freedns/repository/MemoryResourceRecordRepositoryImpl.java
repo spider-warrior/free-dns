@@ -18,9 +18,9 @@ import java.util.concurrent.ConcurrentHashMap;
  * @version V1.0
  * @since 2021-12-20 10:50
  **/
-public class MemoryIpMappingRepositoryImpl implements IpMappingRepository {
+public class MemoryResourceRecordRepositoryImpl implements ResourceRecordRepository {
 
-    private static final Logger logger = LoggerFactory.getLogger(MemoryIpMappingRepositoryImpl.class);
+    private static final Logger logger = LoggerFactory.getLogger(MemoryResourceRecordRepositoryImpl.class);
 
     private static final Map<String, List<Record>> domainRecordListMap = new ConcurrentHashMap<>();
 
@@ -29,7 +29,7 @@ public class MemoryIpMappingRepositoryImpl implements IpMappingRepository {
         return domainRecordListMap.get(domain);
     }
 
-    public MemoryIpMappingRepositoryImpl() {
+    public MemoryResourceRecordRepositoryImpl() {
         Properties properties = tryIpv4DomainMappingConfiguration();
         Set<String> domainSet = properties.stringPropertyNames();
         for (String domain : domainSet) {
@@ -56,7 +56,7 @@ public class MemoryIpMappingRepositoryImpl implements IpMappingRepository {
     private static Properties tryIpv4DomainMappingConfiguration() {
         Properties properties = new Properties();
         try (
-                InputStream is = MemoryIpMappingRepositoryImpl.class.getResourceAsStream("/ipv4-domain-mapping.properties")
+                InputStream is = MemoryResourceRecordRepositoryImpl.class.getResourceAsStream("/ipv4-domain-mapping.properties")
         ) {
             if(is == null) {
                 logger.error("ipv4配置文件未找到: {}", "ipv4-domain-mapping.properties");

@@ -7,8 +7,8 @@ import cn.t.freedns.core.RequestProcessTracer;
 import cn.t.freedns.core.constants.RecordClass;
 import cn.t.freedns.core.constants.RecordType;
 import cn.t.freedns.core.data.*;
-import cn.t.freedns.repository.IpMappingRepository;
-import cn.t.freedns.repository.MemoryIpMappingRepositoryImpl;
+import cn.t.freedns.repository.ResourceRecordRepository;
+import cn.t.freedns.repository.MemoryResourceRecordRepositoryImpl;
 import cn.t.freedns.util.MessageCodecUtil;
 import cn.t.freedns.util.MessageFlagUtil;
 import org.slf4j.Logger;
@@ -29,7 +29,7 @@ public class IpV4DomainQueryHandler implements QueryHandler {
 
     private static final Logger logger = LoggerFactory.getLogger(IpV4DomainQueryHandler.class);
 
-    private final IpMappingRepository ipMappingRepository = new MemoryIpMappingRepositoryImpl();
+    private final ResourceRecordRepository resourceRecordRepository = new MemoryResourceRecordRepositoryImpl();
     private final Map<String, List<Record>> domainRecordListMap = new HashMap<>();
 
     @Override
@@ -73,7 +73,7 @@ public class IpV4DomainQueryHandler implements QueryHandler {
 
     //本地配置
     private List<Record> doTryLocalConfigResourceRecords(String domain) {
-        List<Record> recordList = ipMappingRepository.getIpv4RecordListByDomainName(domain);
+        List<Record> recordList = resourceRecordRepository.getIpv4RecordListByDomainName(domain);
         if(recordList != null) {
             logger.info("===================================== domain: {} use local config, recordList: {} =====================================", domain, recordList);
         }
