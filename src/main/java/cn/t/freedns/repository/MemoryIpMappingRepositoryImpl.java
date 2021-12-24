@@ -1,11 +1,15 @@
 package cn.t.freedns.repository;
 
+import cn.t.freedns.core.constants.RecordClass;
+import cn.t.freedns.core.constants.RecordType;
+import cn.t.freedns.core.data.Record;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.Properties;
+import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * MemoryIpMappingRepositoryImpl
@@ -18,15 +22,35 @@ public class MemoryIpMappingRepositoryImpl implements IpMappingRepository {
 
     private static final Logger logger = LoggerFactory.getLogger(MemoryIpMappingRepositoryImpl.class);
 
-    private final Properties properties;
+    private static final Map<String, List<Record>> domainRecordListMap = new ConcurrentHashMap<>();
 
     @Override
-    public String getIpv4ByDomainName(String domain) {
-        return properties.getProperty(domain);
+    public List<Record> getIpv4ByDomainName(String domain) {
+        return domainRecordListMap.get(domain);
     }
 
     public MemoryIpMappingRepositoryImpl() {
-        properties = tryIpv4DomainMappingConfiguration();
+        Properties properties = tryIpv4DomainMappingConfiguration();
+        Set<String> domainSet = properties.stringPropertyNames();
+        for (String domain : domainSet) {
+            String ip = properties.getProperty(domain);
+            if(ip == null || ip.trim().length() == 0) {
+                domainRecordListMap.put(domain, Collections.emptyList());
+            } else {
+                String[] ipElements = ip.split("\\.");
+                byte[] ipBytes = new byte[ipElements.length];
+                for (int i = 0; i < ipElements.length; i++) {
+                    ipBytes[i] = (byte)Short.parseShort(ipElements[i]);
+                }
+                Record record = new Record();
+                record.setDomain(domain);
+                record.setRecordType(RecordType.A.value);
+                record.setRecordClass(RecordClass.IN.value);
+                record.setTtl(600);
+                record.setData(ipBytes);
+                domainRecordListMap.put(domain, Collections.singletonList(record));
+            }
+        }
     }
 
     private static Properties tryIpv4DomainMappingConfiguration() {

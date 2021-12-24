@@ -9,7 +9,6 @@ import cn.t.freedns.core.constants.RecordType;
 import cn.t.freedns.core.data.*;
 import cn.t.freedns.repository.IpMappingRepository;
 import cn.t.freedns.repository.MemoryIpMappingRepositoryImpl;
-import cn.t.freedns.util.CollectionUtil;
 import cn.t.freedns.util.MessageCodecUtil;
 import cn.t.freedns.util.MessageFlagUtil;
 import org.slf4j.Logger;
@@ -44,7 +43,7 @@ public class IpV4DomainQueryHandler implements QueryHandler {
     @Override
     public List<Record> handle(Query query, MessageContext messageContext, RequestProcessTracer requestProcessTracer) {
         List<Record> recordList = tryLocalConfigResourceRecords(query.getDomain(), requestProcessTracer);
-        if(!CollectionUtil.isEmpty(recordList)) {
+        if(recordList != null) {
             return recordList;
         }
         recordList = domainRecordListMap.get(query.getDomain());
@@ -74,23 +73,11 @@ public class IpV4DomainQueryHandler implements QueryHandler {
 
     //本地配置
     private List<Record> doTryLocalConfigResourceRecords(String domain) {
-        String ip = ipMappingRepository.getIpv4ByDomainName(domain);
-        if(ip == null) {
-            return Collections.emptyList();
+        List<Record> recordList = ipMappingRepository.getIpv4ByDomainName(domain);
+        if(recordList != null) {
+            logger.info("===================================== domain: {} use local config, recordList: {} =====================================", domain, recordList);
         }
-        logger.info("===================================== domain: {} use local config, response ip: {} =====================================", domain, ip);
-        String[] ipElements = ip.split("\\.");
-        byte[] ipBytes = new byte[ipElements.length];
-        for (int i = 0; i < ipElements.length; i++) {
-            ipBytes[i] = (byte)Short.parseShort(ipElements[i]);
-        }
-        Record record = new Record();
-        record.setDomain(domain);
-        record.setRecordType(RecordType.A.value);
-        record.setRecordClass(RecordClass.IN.value);
-        record.setTtl(600);
-        record.setData(ipBytes);
-        return Collections.singletonList(record);
+        return recordList;
     }
 
     private List<Record> tryLocalNodeResourceRecords(String domain, RequestProcessTracer requestProcessTracer) {

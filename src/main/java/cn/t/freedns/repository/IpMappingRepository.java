@@ -1,5 +1,9 @@
 package cn.t.freedns.repository;
 
+import cn.t.freedns.core.data.Record;
+
+import java.util.List;
+
 /**
  * IpMappingRepository
  *
@@ -8,5 +12,5 @@ package cn.t.freedns.repository;
  * @since 2021-12-20 10:49
  **/
 public interface IpMappingRepository {
-    String getIpv4ByDomainName(String domain);
+    List<Record> getIpv4ByDomainName(String domain);
 }
