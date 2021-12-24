@@ -25,7 +25,7 @@ public class MemoryIpMappingRepositoryImpl implements IpMappingRepository {
     private static final Map<String, List<Record>> domainRecordListMap = new ConcurrentHashMap<>();
 
     @Override
-    public List<Record> getIpv4ByDomainName(String domain) {
+    public List<Record> getIpv4RecordListByDomainName(String domain) {
         return domainRecordListMap.get(domain);
     }
 

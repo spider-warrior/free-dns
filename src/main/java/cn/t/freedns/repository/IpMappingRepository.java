@@ -12,5 +12,5 @@ import java.util.List;
  * @since 2021-12-20 10:49
  **/
 public interface IpMappingRepository {
-    List<Record> getIpv4ByDomainName(String domain);
+    List<Record> getIpv4RecordListByDomainName(String domain);
 }
