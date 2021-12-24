@@ -13,6 +13,7 @@ import cn.t.freedns.util.MessageCodecUtil;
 import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
+import java.net.InetAddress;
 import java.util.Random;
 import java.util.Timer;
 import java.util.TimerTask;
@@ -44,24 +45,26 @@ public class DomainNameServer {
         startThreadPoolMonitor();
         loadSpecificDnsProperty();
         final byte[] buffer = new byte[1024];
+        DatagramPacket packet = new DatagramPacket(buffer, buffer.length);
         DatagramSocket socket = new DatagramSocket(53);
         while (true) {
-            DatagramPacket packet = new DatagramPacket(buffer, buffer.length);
-            MessageContext messageContext = new MessageContext();
             RequestProcessTracer requestProcessTracer = new RequestProcessTracer();
             // trace [id]
             requestProcessTracer.setTraceId(new Random().nextLong());
             socket.receive(packet);
             //trace [receive time]
             requestProcessTracer.setReceiveTime(System.currentTimeMillis());
+            InetAddress remoteInetAddress = packet.getAddress();
+            int port = packet.getPort();
             byte[] messageBytes = new byte[packet.getLength()];
             System.arraycopy(packet.getData(), 0, messageBytes, 0, packet.getLength());
+            MessageContext messageContext = new MessageContext();
+            messageContext.setServerSocket(socket);
+            messageContext.setRemotePort(port);
+            messageContext.setRemoteInetAddress(remoteInetAddress);
             cpuIntensiveThreadPoolExecutor.submit(() -> {
                 //trace [cpu thread start time]
                 requestProcessTracer.setCpuIntensiveThreadStartTime(System.currentTimeMillis());
-                messageContext.setServerSocket(socket);
-                messageContext.setRemoteInetAddress(packet.getAddress());
-                messageContext.setRemotePort(packet.getPort());
                 Request request = MessageCodecUtil.decodeRequest(messageBytes);
                 messageHandler.handle(request, messageContext, requestProcessTracer);
                 //trace [cpu thread end time]
