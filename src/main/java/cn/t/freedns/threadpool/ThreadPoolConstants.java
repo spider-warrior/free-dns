@@ -9,7 +9,7 @@ package cn.t.freedns.threadpool;
  **/
 public class ThreadPoolConstants {
 
-    public static final String CPU_INTENSIVE_THREAD_GROUP = "计算密集型线程组";
+    public static final String CPU_INTENSIVE_THREAD_GROUP = "CPU密集型线程组";
     public static final String IO_INTENSIVE_THREAD_GROUP = "IO密集型线程组";
 
     public static final int CORE_POOL_SIZE = Runtime.getRuntime().availableProcessors();
