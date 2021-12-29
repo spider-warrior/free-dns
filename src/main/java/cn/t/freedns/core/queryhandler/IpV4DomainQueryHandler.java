@@ -7,8 +7,8 @@ import cn.t.freedns.core.RequestProcessTracer;
 import cn.t.freedns.core.constants.RecordClass;
 import cn.t.freedns.core.constants.RecordType;
 import cn.t.freedns.core.data.*;
-import cn.t.freedns.repository.ResourceRecordRepository;
 import cn.t.freedns.repository.MemoryResourceRecordRepositoryImpl;
+import cn.t.freedns.repository.ResourceRecordRepository;
 import cn.t.freedns.util.MessageCodecUtil;
 import cn.t.freedns.util.MessageFlagUtil;
 import org.slf4j.Logger;
@@ -17,9 +17,7 @@ import org.slf4j.LoggerFactory;
 import java.io.IOException;
 import java.net.*;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 /**
  * @author yj
@@ -30,7 +28,6 @@ public class IpV4DomainQueryHandler implements QueryHandler {
     private static final Logger logger = LoggerFactory.getLogger(IpV4DomainQueryHandler.class);
 
     private final ResourceRecordRepository resourceRecordRepository = new MemoryResourceRecordRepositoryImpl();
-    private final Map<String, List<Record>> domainRecordListMap = new HashMap<>();
 
     @Override
     public boolean support(Query query) {
@@ -46,17 +43,13 @@ public class IpV4DomainQueryHandler implements QueryHandler {
         if(recordList != null) {
             return recordList;
         }
-        recordList = domainRecordListMap.get(query.getDomain());
-        if(recordList != null) {
-            return recordList;
-        }
 //        recordList = tryLocalNodeResourceRecords(query.getDomain(), requestProcessTracer);
 //        if(!CollectionUtil.isEmpty(recordList)) {
 //            domainRecordListMap.put(query.getDomain(), recordList);
 //            return recordList;
 //        }
         recordList = tryThirtyPartyNodeResourceRecords(query.getType(), query.getClazz(), query.getDomain(), requestProcessTracer);
-        domainRecordListMap.put(query.getDomain(), recordList);
+        resourceRecordRepository.saveIpv4RecordList(query.getDomain(), recordList);
         return recordList;
     }
 
