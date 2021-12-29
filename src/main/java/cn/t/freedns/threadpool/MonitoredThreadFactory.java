@@ -1,5 +1,7 @@
 package cn.t.freedns.threadpool;
 
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -12,7 +14,7 @@ import java.util.concurrent.atomic.AtomicInteger;
  * @since 2020-02-24 22:24
  **/
 public class MonitoredThreadFactory implements ThreadFactory {
-    private static final AtomicInteger poolNumber = new AtomicInteger(1);
+    private static final Map<String, AtomicInteger> poolNameCounterMap = new ConcurrentHashMap<>();
     private final AtomicInteger threadNumber = new AtomicInteger(1);
     private final ThreadGroup group;
     private final String namePrefix;
@@ -24,7 +26,8 @@ public class MonitoredThreadFactory implements ThreadFactory {
      */
     public MonitoredThreadFactory(String poolName, ThreadGroup group) {
         this.group = group;
-        namePrefix = poolName + "-" + poolNumber.getAndIncrement() + "-";
+        AtomicInteger poolCounter = poolNameCounterMap.computeIfAbsent(poolName, k -> new AtomicInteger(1));
+        namePrefix = poolName + "-" + poolCounter.getAndIncrement() + "-";
     }
 
     @Override
