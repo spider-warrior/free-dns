@@ -105,6 +105,7 @@ public class IpV4DomainQueryHandler implements QueryHandler {
     private List<Record> tryThirtyPartyNodeResourceRecords(short type, short clazz, String domain, RequestProcessTracer requestProcessTracer) {
         //trace [io thread thirty party search start time]
         requestProcessTracer.setIoIntensiveThreadThirtyPartySearchStartTime(System.currentTimeMillis());
+        logger.info("use thirty party resolver(114.114.114.114) for domain: {}, traceId: {}", domain, requestProcessTracer.getTraceId());
         try {
             return doTryThirtyPartyNodeResourceRecords(type, clazz, domain);
         } finally {
@@ -115,7 +116,6 @@ public class IpV4DomainQueryHandler implements QueryHandler {
 
     //三方解析器
     private List<Record> doTryThirtyPartyNodeResourceRecords(short type, short clazz, String domain) {
-        logger.info("use thirty party resolver(114.114.114.114) for domain: {}", domain);
         try {
             Head head = new Head();
             head.setTransID((short)System.currentTimeMillis());
