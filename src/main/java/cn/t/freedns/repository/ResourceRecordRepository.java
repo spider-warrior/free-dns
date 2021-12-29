@@ -12,5 +12,6 @@ import java.util.List;
  * @since 2021-12-20 10:49
  **/
 public interface ResourceRecordRepository {
-    List<Record> getIpv4RecordListByDomainName(String domain);
+    List<Record> selectIpv4RecordListByDomainName(String domain);
+    void saveIpv4RecordList(String domain, List<Record> recordList);
 }

@@ -25,8 +25,13 @@ public class MemoryResourceRecordRepositoryImpl implements ResourceRecordReposit
     private static final Map<String, List<Record>> domainRecordListMap = new ConcurrentHashMap<>();
 
     @Override
-    public List<Record> getIpv4RecordListByDomainName(String domain) {
+    public List<Record> selectIpv4RecordListByDomainName(String domain) {
         return domainRecordListMap.get(domain);
+    }
+
+    @Override
+    public void saveIpv4RecordList(String domain, List<Record> recordList) {
+        domainRecordListMap.put(domain, recordList);
     }
 
     public MemoryResourceRecordRepositoryImpl() {
