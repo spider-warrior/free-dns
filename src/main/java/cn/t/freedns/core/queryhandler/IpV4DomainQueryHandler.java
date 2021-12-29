@@ -115,7 +115,7 @@ public class IpV4DomainQueryHandler implements QueryHandler {
 
     //三方解析器
     private List<Record> doTryThirtyPartyNodeResourceRecords(short type, short clazz, String domain) {
-        logger.info("domain: {} cannot be resolved by local resolver, use 114.114.114.114", domain);
+        logger.info("use thirty party resolver(114.114.114.114) for domain: {}", domain);
         try {
             Head head = new Head();
             head.setTransID((short)System.currentTimeMillis());
