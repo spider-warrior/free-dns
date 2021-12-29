@@ -66,11 +66,7 @@ public class IpV4DomainQueryHandler implements QueryHandler {
 
     //本地配置
     private List<Record> doTryLocalConfigResourceRecords(String domain) {
-        List<Record> recordList = resourceRecordRepository.selectIpv4RecordListByDomainName(domain);
-        if(recordList != null) {
-            logger.info("===================================== domain: {} use local config, recordList: {} =====================================", domain, recordList);
-        }
-        return recordList;
+        return resourceRecordRepository.selectIpv4RecordListByDomainName(domain);
     }
 
     private List<Record> tryLocalNodeResourceRecords(String domain, RequestProcessTracer requestProcessTracer) {
