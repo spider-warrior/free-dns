@@ -5,8 +5,8 @@ import cn.t.freedns.ForbidServiceException;
 import cn.t.freedns.core.constants.RecordClass;
 import cn.t.freedns.core.constants.RecordType;
 import cn.t.freedns.core.data.*;
-import cn.t.freedns.core.queryhandler.IpV4DomainQueryHandler;
-import cn.t.freedns.core.queryhandler.IpV6DomainQueryHandler;
+import cn.t.freedns.core.queryhandler.ipv4.IpV4DomainQueryHandlerAdapter;
+import cn.t.freedns.core.queryhandler.IpV6DomainQueryHandlerAdapter;
 import cn.t.freedns.core.queryhandler.QueryHandler;
 import cn.t.freedns.util.MessageFlagUtil;
 import org.slf4j.Logger;
@@ -72,7 +72,7 @@ public class RequestHandler {
     }
 
     public RequestHandler() {
-        queryHandlerList.add(new IpV4DomainQueryHandler());
-        queryHandlerList.add(new IpV6DomainQueryHandler());
+        queryHandlerList.add(new IpV4DomainQueryHandlerAdapter());
+        queryHandlerList.add(new IpV6DomainQueryHandlerAdapter());
     }
 }

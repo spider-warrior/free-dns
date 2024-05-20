@@ -17,7 +17,7 @@ import java.util.List;
  * @version V1.0
  * @since 2021-12-20 11:09
  **/
-public class IpV6DomainQueryHandler implements QueryHandler {
+public class IpV6DomainQueryHandlerAdapter implements QueryHandler {
 
     @Override
     public boolean support(Query query) {
