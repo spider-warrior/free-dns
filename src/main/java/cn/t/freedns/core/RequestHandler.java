@@ -9,6 +9,8 @@ import cn.t.freedns.core.queryhandler.IpV4DomainQueryHandler;
 import cn.t.freedns.core.queryhandler.IpV6DomainQueryHandler;
 import cn.t.freedns.core.queryhandler.QueryHandler;
 import cn.t.freedns.util.MessageFlagUtil;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -18,6 +20,7 @@ import java.util.List;
  * @since 2020-01-01 10:43
  **/
 public class RequestHandler {
+    private static final Logger logger = LoggerFactory.getLogger(RequestHandler.class);
 
     private final List<QueryHandler> queryHandlerList = new ArrayList<>();
     public Response handle(Request request, MessageContext messageContext, RequestProcessTracer requestProcessTracer) {
@@ -29,7 +32,9 @@ public class RequestHandler {
                 //trace [domain]
                 requestProcessTracer.addDomain(query.getDomain() + "(" + RecordType.getRecordType(query.getType()) + "," + RecordClass.getRecordClass(query.getClazz()) + ")");
                 List<Record> partRecordList = queryHandler.handle(query, messageContext, requestProcessTracer);
-                if(partRecordList != null) {
+                if(partRecordList == null || partRecordList.size() == 0) {
+                    logger.warn("域名: [{}]未查询到匹配记录, type: {}, recordClass: {}", query.getDomain(), query.getType(), query.getClazz());
+                } else {
                     recordList.addAll(partRecordList);
                 }
             } else {
